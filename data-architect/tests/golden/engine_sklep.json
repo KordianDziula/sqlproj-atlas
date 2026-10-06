@@ -1,0 +1,2728 @@
+{
+ "DWH": {
+  "edges": [
+   {
+    "externalDb": "$(Archive)",
+    "externalServer": null,
+    "from": "arch.usp_archiveorders",
+    "kind": "writes",
+    "to": "dbo.ordershistory"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "arch.usp_archiveorders",
+    "kind": "reads",
+    "to": "dim.dimdate"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "arch.usp_archiveorders",
+    "kind": "reads",
+    "to": "fact.factsales"
+   },
+   {
+    "externalDb": "$(Archive)",
+    "externalServer": null,
+    "from": "arch.vw_ordershistory",
+    "kind": "reads",
+    "to": "dbo.ordershistory"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "dim.usp_loaddimcustomer",
+    "kind": "writes",
+    "to": "dim.dimcustomer"
+   },
+   {
+    "externalDb": "$(Staging)",
+    "externalServer": null,
+    "from": "dim.usp_loaddimcustomer",
+    "kind": "reads",
+    "to": "stg.stg_customers"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "etl.usp_runnightly",
+    "kind": "calls",
+    "to": "dim.usp_loaddimcustomer"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "etl.usp_runnightly",
+    "kind": "writes",
+    "to": "etl.etllog"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "etl.usp_runnightly",
+    "kind": "calls",
+    "to": "fact.usp_loadfactsales"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "fact.factsales",
+    "kind": "fk",
+    "to": "dim.dimcustomer"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "fact.factsales",
+    "kind": "fk",
+    "to": "dim.dimdate"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "fact.factsales",
+    "kind": "fk",
+    "to": "dim.dimproduct"
+   },
+   {
+    "externalDb": "$(ErpDb)",
+    "externalServer": null,
+    "from": "fact.usp_loadfactsales",
+    "kind": "reads",
+    "to": "dbo.invoices"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "fact.usp_loadfactsales",
+    "kind": "reads",
+    "to": "dim.dimcustomer"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "fact.usp_loadfactsales",
+    "kind": "writes",
+    "to": "fact.factsales"
+   },
+   {
+    "externalDb": "$(Staging)",
+    "externalServer": null,
+    "from": "fact.usp_loadfactsales",
+    "kind": "reads",
+    "to": "stg.stg_orders"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "mart.vw_marginbycategory",
+    "kind": "reads",
+    "to": "dim.dimproduct"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "mart.vw_marginbycategory",
+    "kind": "reads",
+    "to": "fact.factsales"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "mart.vw_salesbymonth",
+    "kind": "reads",
+    "to": "dim.dimdate"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "mart.vw_salesbymonth",
+    "kind": "reads",
+    "to": "fact.factsales"
+   }
+  ],
+  "issues": [],
+  "objects": [
+   {
+    "columns": null,
+    "file": "src/DWH/arch/Stored Procedures/usp_ArchiveOrders.sql",
+    "hash": "c5cf95fca9e69903",
+    "key": "arch.usp_archiveorders",
+    "line": 1,
+    "name": "usp_ArchiveOrders",
+    "params": [
+     {
+      "name": "@Before",
+      "output": false,
+      "type": "date"
+     }
+    ],
+    "schema": "arch",
+    "type": "Procedure"
+   },
+   {
+    "columns": null,
+    "file": "src/DWH/arch/Views/vw_OrdersHistory.sql",
+    "hash": "6f47f9f56e9b18e7",
+    "key": "arch.vw_ordershistory",
+    "line": 1,
+    "name": "vw_OrdersHistory",
+    "params": null,
+    "schema": "arch",
+    "type": "View"
+   },
+   {
+    "columns": null,
+    "file": "src/DWH/dbo/Synonyms/syn_StgOrders.sql",
+    "hash": "be2b948e27204ed8",
+    "key": "dbo.syn_stgorders",
+    "line": 1,
+    "name": "syn_StgOrders",
+    "params": null,
+    "schema": "dbo",
+    "type": "Synonym"
+   },
+   {
+    "columns": [
+     {
+      "computed": false,
+      "fk": false,
+      "identity": true,
+      "name": "CustomerKey",
+      "nullable": false,
+      "pk": true,
+      "type": "int"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "CustomerId",
+      "nullable": false,
+      "pk": false,
+      "type": "int"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "FullName",
+      "nullable": false,
+      "pk": false,
+      "type": "nvarchar(200)"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "Country",
+      "nullable": false,
+      "pk": false,
+      "type": "char(2)"
+     }
+    ],
+    "file": "src/DWH/dim/Tables/DimCustomer.sql",
+    "hash": "a378726b2e11a2a6",
+    "key": "dim.dimcustomer",
+    "line": 1,
+    "name": "DimCustomer",
+    "params": null,
+    "schema": "dim",
+    "type": "Table"
+   },
+   {
+    "columns": [
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "DateKey",
+      "nullable": false,
+      "pk": true,
+      "type": "int"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "Date",
+      "nullable": false,
+      "pk": false,
+      "type": "date"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "Year",
+      "nullable": false,
+      "pk": false,
+      "type": "int"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "Month",
+      "nullable": false,
+      "pk": false,
+      "type": "int"
+     }
+    ],
+    "file": "src/DWH/dim/Tables/DimDate.sql",
+    "hash": "f4c6f8fff3446ff1",
+    "key": "dim.dimdate",
+    "line": 1,
+    "name": "DimDate",
+    "params": null,
+    "schema": "dim",
+    "type": "Table"
+   },
+   {
+    "columns": [
+     {
+      "computed": false,
+      "fk": false,
+      "identity": true,
+      "name": "ProductKey",
+      "nullable": false,
+      "pk": true,
+      "type": "int"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "ProductId",
+      "nullable": false,
+      "pk": false,
+      "type": "int"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "Name",
+      "nullable": false,
+      "pk": false,
+      "type": "nvarchar(200)"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "Category",
+      "nullable": true,
+      "pk": false,
+      "type": "nvarchar(100)"
+     }
+    ],
+    "file": "src/DWH/dim/Tables/DimProduct.sql",
+    "hash": "4023c75e68aa02c6",
+    "key": "dim.dimproduct",
+    "line": 1,
+    "name": "DimProduct",
+    "params": null,
+    "schema": "dim",
+    "type": "Table"
+   },
+   {
+    "columns": null,
+    "file": "src/DWH/dim/Stored Procedures/usp_LoadDimCustomer.sql",
+    "hash": "368740e9075b4c08",
+    "key": "dim.usp_loaddimcustomer",
+    "line": 1,
+    "name": "usp_LoadDimCustomer",
+    "params": [],
+    "schema": "dim",
+    "type": "Procedure"
+   },
+   {
+    "columns": [
+     {
+      "computed": false,
+      "fk": false,
+      "identity": true,
+      "name": "Id",
+      "nullable": false,
+      "pk": true,
+      "type": "int"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "Step",
+      "nullable": false,
+      "pk": false,
+      "type": "varchar(50)"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "Logged",
+      "nullable": false,
+      "pk": false,
+      "type": "datetime2(0)"
+     }
+    ],
+    "file": "src/DWH/etl/Tables/EtlLog.sql",
+    "hash": "fdb93ae2e0ac8fc3",
+    "key": "etl.etllog",
+    "line": 1,
+    "name": "EtlLog",
+    "params": null,
+    "schema": "etl",
+    "type": "Table"
+   },
+   {
+    "columns": null,
+    "file": "src/DWH/etl/Stored Procedures/usp_RunNightly.sql",
+    "hash": "7cd9dd2ddd105d9c",
+    "key": "etl.usp_runnightly",
+    "line": 1,
+    "name": "usp_RunNightly",
+    "params": [],
+    "schema": "etl",
+    "type": "Procedure"
+   },
+   {
+    "columns": [
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "OrderId",
+      "nullable": false,
+      "pk": false,
+      "type": "int"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "Amount",
+      "nullable": false,
+      "pk": false,
+      "type": "decimal(18,2)"
+     }
+    ],
+    "file": "src/DWH/fact/Tables/FactReturns.sql",
+    "hash": "fac4529e4a63e923",
+    "key": "fact.factreturns",
+    "line": 1,
+    "name": "FactReturns",
+    "params": null,
+    "schema": "fact",
+    "type": "Table"
+   },
+   {
+    "columns": [
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "OrderId",
+      "nullable": false,
+      "pk": false,
+      "type": "int"
+     },
+     {
+      "computed": false,
+      "fk": true,
+      "identity": false,
+      "name": "CustomerKey",
+      "nullable": false,
+      "pk": false,
+      "type": "int"
+     },
+     {
+      "computed": false,
+      "fk": true,
+      "identity": false,
+      "name": "ProductKey",
+      "nullable": false,
+      "pk": false,
+      "type": "int"
+     },
+     {
+      "computed": false,
+      "fk": true,
+      "identity": false,
+      "name": "DateKey",
+      "nullable": false,
+      "pk": false,
+      "type": "int"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "Revenue",
+      "nullable": false,
+      "pk": false,
+      "type": "decimal(18,2)"
+     }
+    ],
+    "file": "src/DWH/fact/Tables/FactSales.sql",
+    "hash": "0eb7f9101b773c69",
+    "key": "fact.factsales",
+    "line": 1,
+    "name": "FactSales",
+    "params": null,
+    "schema": "fact",
+    "type": "Table"
+   },
+   {
+    "columns": null,
+    "file": "src/DWH/fact/Stored Procedures/usp_LoadFactSales.sql",
+    "hash": "7c9c20169a21bc48",
+    "key": "fact.usp_loadfactsales",
+    "line": 1,
+    "name": "usp_LoadFactSales",
+    "params": [],
+    "schema": "fact",
+    "type": "Procedure"
+   },
+   {
+    "columns": null,
+    "file": "src/DWH/mart/Views/vw_MarginByCategory.sql",
+    "hash": "1ad902d05cfff040",
+    "key": "mart.vw_marginbycategory",
+    "line": 1,
+    "name": "vw_MarginByCategory",
+    "params": null,
+    "schema": "mart",
+    "type": "View"
+   },
+   {
+    "columns": null,
+    "file": "src/DWH/mart/Views/vw_SalesByMonth.sql",
+    "hash": "2f22440a341c99c2",
+    "key": "mart.vw_salesbymonth",
+    "line": 1,
+    "name": "vw_SalesByMonth",
+    "params": null,
+    "schema": "mart",
+    "type": "View"
+   }
+  ],
+  "parseErrors": [],
+  "platform": "Sql150"
+ },
+ "Sales": {
+  "edges": [
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "audit.usp_writeaudit",
+    "kind": "writes",
+    "to": "audit.changelog"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "cat.prices",
+    "kind": "fk",
+    "to": "cat.products"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "cat.prices",
+    "kind": "fk",
+    "to": "dbo.currencies"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "cat.products",
+    "kind": "fk",
+    "to": "cat.categories"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "cat.usp_updateprice",
+    "kind": "writes",
+    "to": "cat.prices"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "cat.vw_catalog",
+    "kind": "reads",
+    "to": "cat.categories"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "cat.vw_catalog",
+    "kind": "reads",
+    "to": "cat.prices"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "cat.vw_catalog",
+    "kind": "reads",
+    "to": "cat.products"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "crm.addresses",
+    "kind": "fk",
+    "to": "crm.customers"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "crm.consents",
+    "kind": "fk",
+    "to": "crm.customers"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "crm.customers",
+    "kind": "fk",
+    "to": "dbo.countries"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "crm.usp_syncfromcrm",
+    "kind": "writes",
+    "to": "crm.customers"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "crm.vw_activecustomers",
+    "kind": "reads",
+    "to": "crm.consents"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "crm.vw_activecustomers",
+    "kind": "reads",
+    "to": "crm.customers"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "crm.vw_activecustomers",
+    "kind": "reads",
+    "to": "dbo.countries"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "dbo.usp_purgetable",
+    "kind": "reads",
+    "to": "cfg.purgetables"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "inv.reservations",
+    "kind": "fk",
+    "to": "sales.orders"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "inv.stocklevels",
+    "kind": "fk",
+    "to": "cat.products"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "inv.stocklevels",
+    "kind": "fk",
+    "to": "inv.warehouses"
+   },
+   {
+    "externalDb": "ImportDb",
+    "externalServer": null,
+    "from": "inv.usp_importstock",
+    "kind": "reads",
+    "to": "dbo.stockfeed"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "inv.usp_importstock",
+    "kind": "writes",
+    "to": "inv.stocklevels"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "inv.usp_recalcstock_old",
+    "kind": "writes",
+    "to": "inv.stocklevels"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "inv.usp_reservestock",
+    "kind": "writes",
+    "to": "inv.reservations"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "inv.usp_reservestock",
+    "kind": "writes",
+    "to": "inv.stocklevels"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "inv.usp_reservestock",
+    "kind": "reads",
+    "to": "sales.orderitems"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "pay.refunds",
+    "kind": "fk",
+    "to": "pay.transactions"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "pay.transactions",
+    "kind": "fk",
+    "to": "sales.orders"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "pay.usp_capturepayment",
+    "kind": "writes",
+    "to": "pay.transactions"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "pay.usp_capturepayment",
+    "kind": "writes",
+    "to": "sales.orders"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "rpt.usp_monthlykpi",
+    "kind": "reads",
+    "to": "rpt.vw_salesreport"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "rpt.vw_salesreport",
+    "kind": "reads",
+    "to": "cat.products"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "rpt.vw_salesreport",
+    "kind": "reads",
+    "to": "sales.orderitems"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "rpt.vw_salesreport",
+    "kind": "reads",
+    "to": "sales.orders"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "rpt.vw_topcustomers",
+    "kind": "reads",
+    "to": "crm.customers"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "rpt.vw_topcustomers",
+    "kind": "reads",
+    "to": "sales.orders"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "sales.fn_ordertotal",
+    "kind": "reads",
+    "to": "sales.orderitems"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "sales.orderitems",
+    "kind": "fk",
+    "to": "cat.products"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "sales.orderitems",
+    "kind": "fk",
+    "to": "sales.orders"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "sales.orders",
+    "kind": "fk",
+    "to": "crm.customers"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "sales.orders",
+    "kind": "fk",
+    "to": "sales.orderstatus"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "sales.shipments",
+    "kind": "fk",
+    "to": "sales.orders"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "sales.trg_orders_audit",
+    "kind": "writes",
+    "to": "audit.changelog"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "sales.trg_orders_audit",
+    "kind": "on",
+    "to": "sales.orders"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "sales.usp_cancelorder",
+    "kind": "writes",
+    "to": "inv.reservations"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "sales.usp_cancelorder",
+    "kind": "writes",
+    "to": "sales.orders"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "sales.usp_createorder",
+    "kind": "reads",
+    "to": "cat.prices"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "sales.usp_createorder",
+    "kind": "calls",
+    "to": "sales.fn_ordertotal"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "sales.usp_createorder",
+    "kind": "writes",
+    "to": "sales.orderitems"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "sales.usp_createorder",
+    "kind": "writes",
+    "to": "sales.orders"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "sales.usp_getordersummary",
+    "kind": "calls",
+    "to": "dbo.fn_formatmoney"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "sales.usp_getordersummary",
+    "kind": "calls",
+    "to": "sales.fn_ordertotal"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "sales.usp_getordersummary",
+    "kind": "reads",
+    "to": "sales.orders"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "sales.usp_getordersummary",
+    "kind": "reads",
+    "to": "sales.orderstatus"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "sales.vw_openorders",
+    "kind": "reads",
+    "to": "sales.orders"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "sales.vw_openorders",
+    "kind": "reads",
+    "to": "sales.orderstatus"
+   }
+  ],
+  "issues": [
+   {
+    "db": null,
+    "kind": "openquery",
+    "line": 5,
+    "message": "SELECT Id, Email, Phone, Segment FROM Contact",
+    "object": "crm.usp_getcustomercrm",
+    "ref": "CRM",
+    "server": "CRM",
+    "snippet": "BEGIN\n    SELECT * FROM OPENQUERY(CRM, 'SELECT Id, Email, Phone, Segment FROM Contact');\nEND"
+   },
+   {
+    "db": null,
+    "kind": "openquery",
+    "line": 6,
+    "message": "SELECT Id, Email, Name FROM Contact",
+    "object": "crm.usp_syncfromcrm",
+    "ref": "CRM_LINK",
+    "server": "CRM_LINK",
+    "snippet": "    MERGE [crm].[Customers] AS t\n    USING (SELECT Id, Email, Name FROM OPENQUERY(CRM_LINK, 'SELECT Id, Email, Name FROM Contact')) AS s\n        ON t.[CrmId] = s.Id"
+   },
+   {
+    "db": null,
+    "kind": "dynamic",
+    "line": 7,
+    "message": null,
+    "object": "dbo.usp_purgetable",
+    "ref": "EXEC ('TRUNCATE TABLE ' + @TableName);",
+    "server": null,
+    "snippet": "    IF EXISTS (SELECT 1 FROM [cfg].[PurgeTables] WHERE [TableName] = @TableName)\n        EXEC ('TRUNCATE TABLE ' + @TableName);\nEND"
+   },
+   {
+    "db": null,
+    "kind": "dynamic",
+    "line": 6,
+    "message": null,
+    "object": "rpt.usp_dynamicpivot",
+    "ref": "EXEC (@pivotSql);",
+    "server": null,
+    "snippet": "    DECLARE @pivotSql NVARCHAR (MAX) = N'SELECT * FROM rpt.vw_SalesReport PIVOT (SUM(Revenue) FOR Product IN (' + @Columns + N')) AS p';\n    EXEC (@pivotSql);\nEND"
+   },
+   {
+    "db": null,
+    "kind": "unresolved",
+    "line": 3,
+    "message": "Obiekt nie istnieje w projekcie (SQL71502)",
+    "object": "rpt.vw_legacykpi",
+    "ref": "dbo.kpicache",
+    "server": null,
+    "snippet": "AS\nSELECT [KpiName], [KpiValue] FROM [dbo].[KpiCache];"
+   }
+  ],
+  "objects": [
+   {
+    "columns": [
+     {
+      "computed": false,
+      "fk": false,
+      "identity": true,
+      "name": "LogId",
+      "nullable": false,
+      "pk": true,
+      "type": "bigint"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "TableName",
+      "nullable": false,
+      "pk": false,
+      "type": "sysname"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "RowKey",
+      "nullable": false,
+      "pk": false,
+      "type": "varchar(20)"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "ChangedAt",
+      "nullable": false,
+      "pk": false,
+      "type": "datetime2(3)"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "ChangedBy",
+      "nullable": false,
+      "pk": false,
+      "type": "nvarchar(128)"
+     }
+    ],
+    "file": "src/Sales/audit/Tables/ChangeLog.sql",
+    "hash": "c61d78b9188c684e",
+    "key": "audit.changelog",
+    "line": 1,
+    "name": "ChangeLog",
+    "params": null,
+    "schema": "audit",
+    "type": "Table"
+   },
+   {
+    "columns": [
+     {
+      "computed": false,
+      "fk": false,
+      "identity": true,
+      "name": "Id",
+      "nullable": false,
+      "pk": true,
+      "type": "bigint"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "LoginName",
+      "nullable": false,
+      "pk": false,
+      "type": "nvarchar(128)"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "LoggedAt",
+      "nullable": false,
+      "pk": false,
+      "type": "datetime2(0)"
+     }
+    ],
+    "file": "src/Sales/audit/Tables/LoginAudit.sql",
+    "hash": "1996469a48b43f85",
+    "key": "audit.loginaudit",
+    "line": 1,
+    "name": "LoginAudit",
+    "params": null,
+    "schema": "audit",
+    "type": "Table"
+   },
+   {
+    "columns": null,
+    "file": "src/Sales/audit/Stored Procedures/usp_WriteAudit.sql",
+    "hash": "3e45e625aacf09aa",
+    "key": "audit.usp_writeaudit",
+    "line": 1,
+    "name": "usp_WriteAudit",
+    "params": [
+     {
+      "name": "@TableName",
+      "output": false,
+      "type": "sysname"
+     },
+     {
+      "name": "@RowKey",
+      "output": false,
+      "type": "varchar(20)"
+     }
+    ],
+    "schema": "audit",
+    "type": "Procedure"
+   },
+   {
+    "columns": [
+     {
+      "computed": false,
+      "fk": false,
+      "identity": true,
+      "name": "CategoryId",
+      "nullable": false,
+      "pk": true,
+      "type": "int"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "Name",
+      "nullable": false,
+      "pk": false,
+      "type": "nvarchar(100)"
+     },
+     {
+      "computed": false,
+      "fk": true,
+      "identity": false,
+      "name": "ParentId",
+      "nullable": true,
+      "pk": false,
+      "type": "int"
+     }
+    ],
+    "file": "src/Sales/cat/Tables/Categories.sql",
+    "hash": "6e61c23994a6e102",
+    "key": "cat.categories",
+    "line": 1,
+    "name": "Categories",
+    "params": null,
+    "schema": "cat",
+    "type": "Table"
+   },
+   {
+    "columns": [
+     {
+      "computed": false,
+      "fk": true,
+      "identity": false,
+      "name": "ProductId",
+      "nullable": false,
+      "pk": true,
+      "type": "int"
+     },
+     {
+      "computed": false,
+      "fk": true,
+      "identity": false,
+      "name": "CurrencyCode",
+      "nullable": false,
+      "pk": true,
+      "type": "char(3)"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "Price",
+      "nullable": false,
+      "pk": false,
+      "type": "decimal(18,2)"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "ValidFrom",
+      "nullable": false,
+      "pk": true,
+      "type": "date"
+     }
+    ],
+    "file": "src/Sales/cat/Tables/Prices.sql",
+    "hash": "0d0d604a8169bc52",
+    "key": "cat.prices",
+    "line": 1,
+    "name": "Prices",
+    "params": null,
+    "schema": "cat",
+    "type": "Table"
+   },
+   {
+    "columns": [
+     {
+      "computed": false,
+      "fk": false,
+      "identity": true,
+      "name": "ProductId",
+      "nullable": false,
+      "pk": true,
+      "type": "int"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "Sku",
+      "nullable": false,
+      "pk": false,
+      "type": "varchar(30)"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "Name",
+      "nullable": false,
+      "pk": false,
+      "type": "nvarchar(200)"
+     },
+     {
+      "computed": false,
+      "fk": true,
+      "identity": false,
+      "name": "CategoryId",
+      "nullable": false,
+      "pk": false,
+      "type": "int"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "IsActive",
+      "nullable": false,
+      "pk": false,
+      "type": "bit"
+     }
+    ],
+    "file": "src/Sales/cat/Tables/Products.sql",
+    "hash": "32ba4e41e94b0b26",
+    "key": "cat.products",
+    "line": 1,
+    "name": "Products",
+    "params": null,
+    "schema": "cat",
+    "type": "Table"
+   },
+   {
+    "columns": null,
+    "file": "src/Sales/cat/Stored Procedures/usp_UpdatePrice.sql",
+    "hash": "6571a1e79fdbdb50",
+    "key": "cat.usp_updateprice",
+    "line": 1,
+    "name": "usp_UpdatePrice",
+    "params": [
+     {
+      "name": "@ProductId",
+      "output": false,
+      "type": "int"
+     },
+     {
+      "name": "@CurrencyCode",
+      "output": false,
+      "type": "char(3)"
+     },
+     {
+      "name": "@Price",
+      "output": false,
+      "type": "decimal(18,2)"
+     }
+    ],
+    "schema": "cat",
+    "type": "Procedure"
+   },
+   {
+    "columns": null,
+    "file": "src/Sales/cat/Views/vw_Catalog.sql",
+    "hash": "38f3a195e56d1515",
+    "key": "cat.vw_catalog",
+    "line": 1,
+    "name": "vw_Catalog",
+    "params": null,
+    "schema": "cat",
+    "type": "View"
+   },
+   {
+    "columns": [
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "TableName",
+      "nullable": false,
+      "pk": true,
+      "type": "sysname"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "RetentionDays",
+      "nullable": false,
+      "pk": false,
+      "type": "int"
+     }
+    ],
+    "file": "src/Sales/cfg/Tables/PurgeTables.sql",
+    "hash": "2d6f73e0c428da0a",
+    "key": "cfg.purgetables",
+    "line": 1,
+    "name": "PurgeTables",
+    "params": null,
+    "schema": "cfg",
+    "type": "Table"
+   },
+   {
+    "columns": [
+     {
+      "computed": false,
+      "fk": false,
+      "identity": true,
+      "name": "AddressId",
+      "nullable": false,
+      "pk": true,
+      "type": "int"
+     },
+     {
+      "computed": false,
+      "fk": true,
+      "identity": false,
+      "name": "CustomerId",
+      "nullable": false,
+      "pk": false,
+      "type": "int"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "Street",
+      "nullable": false,
+      "pk": false,
+      "type": "nvarchar(200)"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "City",
+      "nullable": false,
+      "pk": false,
+      "type": "nvarchar(100)"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "PostalCode",
+      "nullable": false,
+      "pk": false,
+      "type": "varchar(10)"
+     }
+    ],
+    "file": "src/Sales/crm/Tables/Addresses.sql",
+    "hash": "a77cbf0372e1dc5a",
+    "key": "crm.addresses",
+    "line": 1,
+    "name": "Addresses",
+    "params": null,
+    "schema": "crm",
+    "type": "Table"
+   },
+   {
+    "columns": [
+     {
+      "computed": false,
+      "fk": true,
+      "identity": false,
+      "name": "CustomerId",
+      "nullable": false,
+      "pk": true,
+      "type": "int"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "ConsentType",
+      "nullable": false,
+      "pk": true,
+      "type": "varchar(30)"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "Granted",
+      "nullable": false,
+      "pk": false,
+      "type": "bit"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "ChangedAt",
+      "nullable": false,
+      "pk": false,
+      "type": "datetime2(0)"
+     }
+    ],
+    "file": "src/Sales/crm/Tables/Consents.sql",
+    "hash": "c8d884e010bfde69",
+    "key": "crm.consents",
+    "line": 1,
+    "name": "Consents",
+    "params": null,
+    "schema": "crm",
+    "type": "Table"
+   },
+   {
+    "columns": [
+     {
+      "computed": false,
+      "fk": false,
+      "identity": true,
+      "name": "CustomerId",
+      "nullable": false,
+      "pk": true,
+      "type": "int"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "Email",
+      "nullable": false,
+      "pk": false,
+      "type": "nvarchar(256)"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "FullName",
+      "nullable": false,
+      "pk": false,
+      "type": "nvarchar(200)"
+     },
+     {
+      "computed": false,
+      "fk": true,
+      "identity": false,
+      "name": "CountryCode",
+      "nullable": false,
+      "pk": false,
+      "type": "char(2)"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "CrmId",
+      "nullable": true,
+      "pk": false,
+      "type": "varchar(18)"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "CreatedAt",
+      "nullable": false,
+      "pk": false,
+      "type": "datetime2(0)"
+     }
+    ],
+    "file": "src/Sales/crm/Tables/Customers.sql",
+    "hash": "4edfbbd8191a51d0",
+    "key": "crm.customers",
+    "line": 1,
+    "name": "Customers",
+    "params": null,
+    "schema": "crm",
+    "type": "Table"
+   },
+   {
+    "columns": null,
+    "file": "src/Sales/crm/Stored Procedures/usp_GetCustomerCrm.sql",
+    "hash": "7581c9bfd4c81a6d",
+    "key": "crm.usp_getcustomercrm",
+    "line": 1,
+    "name": "usp_GetCustomerCrm",
+    "params": [
+     {
+      "name": "@CrmId",
+      "output": false,
+      "type": "varchar(18)"
+     }
+    ],
+    "schema": "crm",
+    "type": "Procedure"
+   },
+   {
+    "columns": null,
+    "file": "src/Sales/crm/Stored Procedures/usp_SyncFromCrm.sql",
+    "hash": "8b6b4e397dfc030c",
+    "key": "crm.usp_syncfromcrm",
+    "line": 1,
+    "name": "usp_SyncFromCrm",
+    "params": [],
+    "schema": "crm",
+    "type": "Procedure"
+   },
+   {
+    "columns": null,
+    "file": "src/Sales/crm/Views/vw_ActiveCustomers.sql",
+    "hash": "cc7e8c3c4f2fcec0",
+    "key": "crm.vw_activecustomers",
+    "line": 1,
+    "name": "vw_ActiveCustomers",
+    "params": null,
+    "schema": "crm",
+    "type": "View"
+   },
+   {
+    "columns": [
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "CountryCode",
+      "nullable": false,
+      "pk": true,
+      "type": "char(2)"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "Name",
+      "nullable": false,
+      "pk": false,
+      "type": "nvarchar(100)"
+     }
+    ],
+    "file": "src/Sales/dbo/Tables/Countries.sql",
+    "hash": "928c60b67ffefdeb",
+    "key": "dbo.countries",
+    "line": 1,
+    "name": "Countries",
+    "params": null,
+    "schema": "dbo",
+    "type": "Table"
+   },
+   {
+    "columns": [
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "CurrencyCode",
+      "nullable": false,
+      "pk": true,
+      "type": "char(3)"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "Name",
+      "nullable": false,
+      "pk": false,
+      "type": "nvarchar(50)"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "IsActive",
+      "nullable": false,
+      "pk": false,
+      "type": "bit"
+     }
+    ],
+    "file": "src/Sales/dbo/Tables/Currencies.sql",
+    "hash": "c05d1d79befc8fc6",
+    "key": "dbo.currencies",
+    "line": 1,
+    "name": "Currencies",
+    "params": null,
+    "schema": "dbo",
+    "type": "Table"
+   },
+   {
+    "columns": null,
+    "file": "src/Sales/dbo/Functions/fn_FormatMoney.sql",
+    "hash": "6619cdb0f7fb0ddb",
+    "key": "dbo.fn_formatmoney",
+    "line": 1,
+    "name": "fn_FormatMoney",
+    "params": [
+     {
+      "name": "@Amount",
+      "output": false,
+      "type": "decimal(18,2)"
+     },
+     {
+      "name": "@CurrencyCode",
+      "output": false,
+      "type": "char(3)"
+     }
+    ],
+    "schema": "dbo",
+    "type": "ScalarFunction"
+   },
+   {
+    "columns": null,
+    "file": "src/Sales/dbo/Stored Procedures/usp_PurgeTable.sql",
+    "hash": "4d7e7e108ea7f763",
+    "key": "dbo.usp_purgetable",
+    "line": 1,
+    "name": "usp_PurgeTable",
+    "params": [
+     {
+      "name": "@TableName",
+      "output": false,
+      "type": "sysname"
+     }
+    ],
+    "schema": "dbo",
+    "type": "Procedure"
+   },
+   {
+    "columns": [
+     {
+      "computed": false,
+      "fk": false,
+      "identity": true,
+      "name": "ReservationId",
+      "nullable": false,
+      "pk": true,
+      "type": "int"
+     },
+     {
+      "computed": false,
+      "fk": true,
+      "identity": false,
+      "name": "OrderId",
+      "nullable": false,
+      "pk": false,
+      "type": "int"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "ProductId",
+      "nullable": false,
+      "pk": false,
+      "type": "int"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "Qty",
+      "nullable": false,
+      "pk": false,
+      "type": "int"
+     }
+    ],
+    "file": "src/Sales/inv/Tables/Reservations.sql",
+    "hash": "422ebbff963c073a",
+    "key": "inv.reservations",
+    "line": 1,
+    "name": "Reservations",
+    "params": null,
+    "schema": "inv",
+    "type": "Table"
+   },
+   {
+    "columns": [
+     {
+      "computed": false,
+      "fk": true,
+      "identity": false,
+      "name": "ProductId",
+      "nullable": false,
+      "pk": true,
+      "type": "int"
+     },
+     {
+      "computed": false,
+      "fk": true,
+      "identity": false,
+      "name": "WarehouseId",
+      "nullable": false,
+      "pk": true,
+      "type": "int"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "Qty",
+      "nullable": false,
+      "pk": false,
+      "type": "int"
+     }
+    ],
+    "file": "src/Sales/inv/Tables/StockLevels.sql",
+    "hash": "a61181d196ce7bf3",
+    "key": "inv.stocklevels",
+    "line": 1,
+    "name": "StockLevels",
+    "params": null,
+    "schema": "inv",
+    "type": "Table"
+   },
+   {
+    "columns": null,
+    "file": "src/Sales/inv/Stored Procedures/usp_ImportStock.sql",
+    "hash": "0b1e21926df77168",
+    "key": "inv.usp_importstock",
+    "line": 1,
+    "name": "usp_ImportStock",
+    "params": [],
+    "schema": "inv",
+    "type": "Procedure"
+   },
+   {
+    "columns": null,
+    "file": "src/Sales/inv/Stored Procedures/usp_RecalcStock_old.sql",
+    "hash": "0d4e2622a03cc064",
+    "key": "inv.usp_recalcstock_old",
+    "line": 1,
+    "name": "usp_RecalcStock_old",
+    "params": [],
+    "schema": "inv",
+    "type": "Procedure"
+   },
+   {
+    "columns": null,
+    "file": "src/Sales/inv/Stored Procedures/usp_ReserveStock.sql",
+    "hash": "c5c0fc78498f5a43",
+    "key": "inv.usp_reservestock",
+    "line": 1,
+    "name": "usp_ReserveStock",
+    "params": [
+     {
+      "name": "@OrderId",
+      "output": false,
+      "type": "int"
+     }
+    ],
+    "schema": "inv",
+    "type": "Procedure"
+   },
+   {
+    "columns": [
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "WarehouseId",
+      "nullable": false,
+      "pk": true,
+      "type": "int"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "Name",
+      "nullable": false,
+      "pk": false,
+      "type": "nvarchar(80)"
+     }
+    ],
+    "file": "src/Sales/inv/Tables/Warehouses.sql",
+    "hash": "9951c0456c7e544a",
+    "key": "inv.warehouses",
+    "line": 1,
+    "name": "Warehouses",
+    "params": null,
+    "schema": "inv",
+    "type": "Table"
+   },
+   {
+    "columns": [
+     {
+      "computed": false,
+      "fk": false,
+      "identity": true,
+      "name": "RefundId",
+      "nullable": false,
+      "pk": true,
+      "type": "bigint"
+     },
+     {
+      "computed": false,
+      "fk": true,
+      "identity": false,
+      "name": "TransactionId",
+      "nullable": false,
+      "pk": false,
+      "type": "bigint"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "Amount",
+      "nullable": false,
+      "pk": false,
+      "type": "decimal(18,2)"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "Reason",
+      "nullable": true,
+      "pk": false,
+      "type": "nvarchar(200)"
+     }
+    ],
+    "file": "src/Sales/pay/Tables/Refunds.sql",
+    "hash": "645f95c8da4f88e0",
+    "key": "pay.refunds",
+    "line": 1,
+    "name": "Refunds",
+    "params": null,
+    "schema": "pay",
+    "type": "Table"
+   },
+   {
+    "columns": [
+     {
+      "computed": false,
+      "fk": false,
+      "identity": true,
+      "name": "TransactionId",
+      "nullable": false,
+      "pk": true,
+      "type": "bigint"
+     },
+     {
+      "computed": false,
+      "fk": true,
+      "identity": false,
+      "name": "OrderId",
+      "nullable": false,
+      "pk": false,
+      "type": "int"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "Amount",
+      "nullable": false,
+      "pk": false,
+      "type": "decimal(18,2)"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "CurrencyCode",
+      "nullable": false,
+      "pk": false,
+      "type": "char(3)"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "Provider",
+      "nullable": false,
+      "pk": false,
+      "type": "varchar(30)"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "Status",
+      "nullable": false,
+      "pk": false,
+      "type": "varchar(20)"
+     }
+    ],
+    "file": "src/Sales/pay/Tables/Transactions.sql",
+    "hash": "f0e2bcbdc0f64b76",
+    "key": "pay.transactions",
+    "line": 1,
+    "name": "Transactions",
+    "params": null,
+    "schema": "pay",
+    "type": "Table"
+   },
+   {
+    "columns": null,
+    "file": "src/Sales/pay/Stored Procedures/usp_CapturePayment.sql",
+    "hash": "c2cffda193e5e8c4",
+    "key": "pay.usp_capturepayment",
+    "line": 1,
+    "name": "usp_CapturePayment",
+    "params": [
+     {
+      "name": "@OrderId",
+      "output": false,
+      "type": "int"
+     },
+     {
+      "name": "@Amount",
+      "output": false,
+      "type": "decimal(18,2)"
+     },
+     {
+      "name": "@Provider",
+      "output": false,
+      "type": "varchar(30)"
+     }
+    ],
+    "schema": "pay",
+    "type": "Procedure"
+   },
+   {
+    "columns": null,
+    "file": "src/Sales/rpt/Stored Procedures/usp_DynamicPivot.sql",
+    "hash": "4accb4381a73119e",
+    "key": "rpt.usp_dynamicpivot",
+    "line": 1,
+    "name": "usp_DynamicPivot",
+    "params": [
+     {
+      "name": "@Columns",
+      "output": false,
+      "type": "nvarchar(max)"
+     }
+    ],
+    "schema": "rpt",
+    "type": "Procedure"
+   },
+   {
+    "columns": null,
+    "file": "src/Sales/rpt/Stored Procedures/usp_MonthlyKpi.sql",
+    "hash": "6de2979417b774da",
+    "key": "rpt.usp_monthlykpi",
+    "line": 1,
+    "name": "usp_MonthlyKpi",
+    "params": [
+     {
+      "name": "@Year",
+      "output": false,
+      "type": "int"
+     },
+     {
+      "name": "@Month",
+      "output": false,
+      "type": "int"
+     }
+    ],
+    "schema": "rpt",
+    "type": "Procedure"
+   },
+   {
+    "columns": null,
+    "file": "src/Sales/rpt/Views/vw_LegacyKpi.sql",
+    "hash": "15784f31c6860e1f",
+    "key": "rpt.vw_legacykpi",
+    "line": 1,
+    "name": "vw_LegacyKpi",
+    "params": null,
+    "schema": "rpt",
+    "type": "View"
+   },
+   {
+    "columns": null,
+    "file": "src/Sales/rpt/Views/vw_SalesReport.sql",
+    "hash": "25c8d3478aece821",
+    "key": "rpt.vw_salesreport",
+    "line": 1,
+    "name": "vw_SalesReport",
+    "params": null,
+    "schema": "rpt",
+    "type": "View"
+   },
+   {
+    "columns": null,
+    "file": "src/Sales/rpt/Views/vw_TopCustomers.sql",
+    "hash": "5cd25cdc390ccfd7",
+    "key": "rpt.vw_topcustomers",
+    "line": 1,
+    "name": "vw_TopCustomers",
+    "params": null,
+    "schema": "rpt",
+    "type": "View"
+   },
+   {
+    "columns": null,
+    "file": "src/Sales/sales/Functions/fn_OrderTotal.sql",
+    "hash": "f54c227e6a1583b6",
+    "key": "sales.fn_ordertotal",
+    "line": 1,
+    "name": "fn_OrderTotal",
+    "params": [
+     {
+      "name": "@OrderId",
+      "output": false,
+      "type": "int"
+     }
+    ],
+    "schema": "sales",
+    "type": "ScalarFunction"
+   },
+   {
+    "columns": [
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "ProductId",
+      "nullable": false,
+      "pk": false,
+      "type": "int"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "Quantity",
+      "nullable": false,
+      "pk": false,
+      "type": "int"
+     }
+    ],
+    "file": "src/Sales/sales/Types/OrderItemList.sql",
+    "hash": "5fea73a73a885a58",
+    "key": "sales.orderitemlist",
+    "line": 1,
+    "name": "OrderItemList",
+    "params": null,
+    "schema": "sales",
+    "type": "TableType"
+   },
+   {
+    "columns": [
+     {
+      "computed": false,
+      "fk": true,
+      "identity": false,
+      "name": "OrderId",
+      "nullable": false,
+      "pk": true,
+      "type": "int"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "LineNo",
+      "nullable": false,
+      "pk": true,
+      "type": "smallint"
+     },
+     {
+      "computed": false,
+      "fk": true,
+      "identity": false,
+      "name": "ProductId",
+      "nullable": false,
+      "pk": false,
+      "type": "int"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "Quantity",
+      "nullable": false,
+      "pk": false,
+      "type": "int"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "UnitPrice",
+      "nullable": false,
+      "pk": false,
+      "type": "decimal(18,2)"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "LineTotal",
+      "nullable": true,
+      "pk": false,
+      "type": ""
+     }
+    ],
+    "file": "src/Sales/sales/Tables/OrderItems.sql",
+    "hash": "e452bcb4a7884a3f",
+    "key": "sales.orderitems",
+    "line": 1,
+    "name": "OrderItems",
+    "params": null,
+    "schema": "sales",
+    "type": "Table"
+   },
+   {
+    "columns": null,
+    "file": "src/Sales/sales/Sequences/OrderNumberSeq.sql",
+    "hash": "409df1a8b1592ba0",
+    "key": "sales.ordernumberseq",
+    "line": 1,
+    "name": "OrderNumberSeq",
+    "params": null,
+    "schema": "sales",
+    "type": "Sequence"
+   },
+   {
+    "columns": [
+     {
+      "computed": false,
+      "fk": false,
+      "identity": true,
+      "name": "OrderId",
+      "nullable": false,
+      "pk": true,
+      "type": "int"
+     },
+     {
+      "computed": false,
+      "fk": true,
+      "identity": false,
+      "name": "CustomerId",
+      "nullable": false,
+      "pk": false,
+      "type": "int"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "OrderDate",
+      "nullable": false,
+      "pk": false,
+      "type": "datetime2(0)"
+     },
+     {
+      "computed": false,
+      "fk": true,
+      "identity": false,
+      "name": "StatusId",
+      "nullable": false,
+      "pk": false,
+      "type": "tinyint"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "TotalAmount",
+      "nullable": false,
+      "pk": false,
+      "type": "decimal(18,2)"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "DiscountCode",
+      "nullable": true,
+      "pk": false,
+      "type": "varchar(20)"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "CurrencyCode",
+      "nullable": false,
+      "pk": false,
+      "type": "char(3)"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "CreatedBy",
+      "nullable": false,
+      "pk": false,
+      "type": "nvarchar(128)"
+     }
+    ],
+    "file": "src/Sales/sales/Tables/Orders.sql",
+    "hash": "b9ae543c6bcbdbc7",
+    "key": "sales.orders",
+    "line": 1,
+    "name": "Orders",
+    "params": null,
+    "schema": "sales",
+    "type": "Table"
+   },
+   {
+    "columns": [
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "StatusId",
+      "nullable": false,
+      "pk": true,
+      "type": "tinyint"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "Name",
+      "nullable": false,
+      "pk": false,
+      "type": "nvarchar(50)"
+     }
+    ],
+    "file": "src/Sales/sales/Tables/OrderStatus.sql",
+    "hash": "e86afaa888346055",
+    "key": "sales.orderstatus",
+    "line": 1,
+    "name": "OrderStatus",
+    "params": null,
+    "schema": "sales",
+    "type": "Table"
+   },
+   {
+    "columns": [
+     {
+      "computed": false,
+      "fk": false,
+      "identity": true,
+      "name": "ShipmentId",
+      "nullable": false,
+      "pk": true,
+      "type": "int"
+     },
+     {
+      "computed": false,
+      "fk": true,
+      "identity": false,
+      "name": "OrderId",
+      "nullable": false,
+      "pk": false,
+      "type": "int"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "Carrier",
+      "nullable": false,
+      "pk": false,
+      "type": "varchar(30)"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "TrackingNo",
+      "nullable": true,
+      "pk": false,
+      "type": "varchar(50)"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "ShippedAt",
+      "nullable": true,
+      "pk": false,
+      "type": "datetime2(0)"
+     }
+    ],
+    "file": "src/Sales/sales/Tables/Shipments.sql",
+    "hash": "c18e7804c3e2039c",
+    "key": "sales.shipments",
+    "line": 1,
+    "name": "Shipments",
+    "params": null,
+    "schema": "sales",
+    "type": "Table"
+   },
+   {
+    "columns": null,
+    "file": "src/Sales/sales/Triggers/trg_Orders_Audit.sql",
+    "hash": "5c084760c02987d9",
+    "key": "sales.trg_orders_audit",
+    "line": 1,
+    "name": "trg_Orders_Audit",
+    "params": null,
+    "schema": "sales",
+    "type": "DmlTrigger"
+   },
+   {
+    "columns": null,
+    "file": "src/Sales/sales/Stored Procedures/usp_CancelOrder.sql",
+    "hash": "bc6b0f655d0f10a2",
+    "key": "sales.usp_cancelorder",
+    "line": 1,
+    "name": "usp_CancelOrder",
+    "params": [
+     {
+      "name": "@OrderId",
+      "output": false,
+      "type": "int"
+     }
+    ],
+    "schema": "sales",
+    "type": "Procedure"
+   },
+   {
+    "columns": null,
+    "file": "src/Sales/sales/Stored Procedures/usp_CreateOrder.sql",
+    "hash": "49e3489c37b6726e",
+    "key": "sales.usp_createorder",
+    "line": 1,
+    "name": "usp_CreateOrder",
+    "params": [
+     {
+      "name": "@CustomerId",
+      "output": false,
+      "type": "int"
+     },
+     {
+      "name": "@Items",
+      "output": false,
+      "type": "sales.OrderItemList"
+     },
+     {
+      "name": "@OrderId",
+      "output": true,
+      "type": "int"
+     }
+    ],
+    "schema": "sales",
+    "type": "Procedure"
+   },
+   {
+    "columns": null,
+    "file": "src/Sales/sales/Stored Procedures/usp_GetOrderSummary.sql",
+    "hash": "8483272936b46ae7",
+    "key": "sales.usp_getordersummary",
+    "line": 1,
+    "name": "usp_GetOrderSummary",
+    "params": [
+     {
+      "name": "@OrderId",
+      "output": false,
+      "type": "int"
+     }
+    ],
+    "schema": "sales",
+    "type": "Procedure"
+   },
+   {
+    "columns": null,
+    "file": "src/Sales/sales/Views/vw_OpenOrders.sql",
+    "hash": "e5aea5831480604f",
+    "key": "sales.vw_openorders",
+    "line": 1,
+    "name": "vw_OpenOrders",
+    "params": null,
+    "schema": "sales",
+    "type": "View"
+   }
+  ],
+  "parseErrors": [],
+  "platform": "Sql160"
+ },
+ "Staging": {
+  "edges": [
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "crm_stg.usp_loadfromcrm",
+    "kind": "writes",
+    "to": "crm_stg.stg_contacts"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "etl.usp_logrun",
+    "kind": "writes",
+    "to": "etl.etlruns"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "stg.stg_orderitems",
+    "kind": "fk",
+    "to": "stg.stg_orders"
+   },
+   {
+    "externalDb": "$(Sales)",
+    "externalServer": null,
+    "from": "stg.usp_loadfromsales",
+    "kind": "reads",
+    "to": "crm.customers"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "stg.usp_loadfromsales",
+    "kind": "calls",
+    "to": "etl.usp_logrun"
+   },
+   {
+    "externalDb": "$(Sales)",
+    "externalServer": null,
+    "from": "stg.usp_loadfromsales",
+    "kind": "reads",
+    "to": "sales.orders"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "stg.usp_loadfromsales",
+    "kind": "writes",
+    "to": "stg.stg_customers"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "stg.usp_loadfromsales",
+    "kind": "writes",
+    "to": "stg.stg_orderitems"
+   },
+   {
+    "externalDb": null,
+    "externalServer": null,
+    "from": "stg.usp_loadfromsales",
+    "kind": "writes",
+    "to": "stg.stg_orders"
+   }
+  ],
+  "issues": [
+   {
+    "db": null,
+    "kind": "openquery",
+    "line": 5,
+    "message": "SELECT Id, Email, Segment FROM Contact",
+    "object": "crm_stg.usp_loadfromcrm",
+    "ref": "CRM",
+    "server": "CRM",
+    "snippet": "    INSERT INTO [crm_stg].[stg_Contacts] ([CrmId], [Email], [Segment])\n    SELECT Id, Email, Segment FROM OPENQUERY(CRM, 'SELECT Id, Email, Segment FROM Contact');\nEND"
+   }
+  ],
+  "objects": [
+   {
+    "columns": [
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "CrmId",
+      "nullable": false,
+      "pk": true,
+      "type": "varchar(18)"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "Email",
+      "nullable": true,
+      "pk": false,
+      "type": "nvarchar(256)"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "Segment",
+      "nullable": true,
+      "pk": false,
+      "type": "varchar(20)"
+     }
+    ],
+    "file": "src/Staging/crm_stg/Tables/stg_Contacts.sql",
+    "hash": "0fcb7c9c9616a097",
+    "key": "crm_stg.stg_contacts",
+    "line": 1,
+    "name": "stg_Contacts",
+    "params": null,
+    "schema": "crm_stg",
+    "type": "Table"
+   },
+   {
+    "columns": null,
+    "file": "src/Staging/crm_stg/Stored Procedures/usp_LoadFromCrm.sql",
+    "hash": "e2ec8390231fbd2a",
+    "key": "crm_stg.usp_loadfromcrm",
+    "line": 1,
+    "name": "usp_LoadFromCrm",
+    "params": [],
+    "schema": "crm_stg",
+    "type": "Procedure"
+   },
+   {
+    "columns": [
+     {
+      "computed": false,
+      "fk": false,
+      "identity": true,
+      "name": "RunId",
+      "nullable": false,
+      "pk": true,
+      "type": "int"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "Process",
+      "nullable": false,
+      "pk": false,
+      "type": "varchar(50)"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "StartedAt",
+      "nullable": false,
+      "pk": false,
+      "type": "datetime2(0)"
+     }
+    ],
+    "file": "src/Staging/etl/Tables/EtlRuns.sql",
+    "hash": "3d0ab8108090e80d",
+    "key": "etl.etlruns",
+    "line": 1,
+    "name": "EtlRuns",
+    "params": null,
+    "schema": "etl",
+    "type": "Table"
+   },
+   {
+    "columns": null,
+    "file": "src/Staging/etl/Stored Procedures/usp_LogRun.sql",
+    "hash": "5ddef17d26953410",
+    "key": "etl.usp_logrun",
+    "line": 1,
+    "name": "usp_LogRun",
+    "params": [
+     {
+      "name": "@Process",
+      "output": false,
+      "type": "varchar(50)"
+     }
+    ],
+    "schema": "etl",
+    "type": "Procedure"
+   },
+   {
+    "columns": [
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "CustomerId",
+      "nullable": false,
+      "pk": true,
+      "type": "int"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "FullName",
+      "nullable": false,
+      "pk": false,
+      "type": "nvarchar(200)"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "Country",
+      "nullable": false,
+      "pk": false,
+      "type": "char(2)"
+     }
+    ],
+    "file": "src/Staging/stg/Tables/stg_Customers.sql",
+    "hash": "773fdc5cc23f3491",
+    "key": "stg.stg_customers",
+    "line": 1,
+    "name": "stg_Customers",
+    "params": null,
+    "schema": "stg",
+    "type": "Table"
+   },
+   {
+    "columns": [
+     {
+      "computed": false,
+      "fk": true,
+      "identity": false,
+      "name": "OrderId",
+      "nullable": false,
+      "pk": true,
+      "type": "int"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "LineNo",
+      "nullable": false,
+      "pk": true,
+      "type": "smallint"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "ProductId",
+      "nullable": false,
+      "pk": false,
+      "type": "int"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "LineTotal",
+      "nullable": false,
+      "pk": false,
+      "type": "decimal(18,2)"
+     }
+    ],
+    "file": "src/Staging/stg/Tables/stg_OrderItems.sql",
+    "hash": "ad2df851b603f79c",
+    "key": "stg.stg_orderitems",
+    "line": 1,
+    "name": "stg_OrderItems",
+    "params": null,
+    "schema": "stg",
+    "type": "Table"
+   },
+   {
+    "columns": [
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "OrderId",
+      "nullable": false,
+      "pk": true,
+      "type": "int"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "CustomerId",
+      "nullable": false,
+      "pk": false,
+      "type": "int"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "OrderDate",
+      "nullable": false,
+      "pk": false,
+      "type": "datetime2(0)"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "TotalAmount",
+      "nullable": false,
+      "pk": false,
+      "type": "decimal(18,2)"
+     },
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "LoadedAt",
+      "nullable": false,
+      "pk": false,
+      "type": "datetime2(0)"
+     }
+    ],
+    "file": "src/Staging/stg/Tables/stg_Orders.sql",
+    "hash": "d3585545b490e90e",
+    "key": "stg.stg_orders",
+    "line": 1,
+    "name": "stg_Orders",
+    "params": null,
+    "schema": "stg",
+    "type": "Table"
+   },
+   {
+    "columns": null,
+    "file": "src/Staging/stg/Stored Procedures/usp_LoadFromSales.sql",
+    "hash": "50ab0e15e9380f0a",
+    "key": "stg.usp_loadfromsales",
+    "line": 1,
+    "name": "usp_LoadFromSales",
+    "params": [],
+    "schema": "stg",
+    "type": "Procedure"
+   }
+  ],
+  "parseErrors": [],
+  "platform": "Sql150"
+ },
+ "Tests": {
+  "edges": [],
+  "issues": [],
+  "objects": [
+   {
+    "columns": [
+     {
+      "computed": false,
+      "fk": false,
+      "identity": false,
+      "name": "Id",
+      "nullable": false,
+      "pk": true,
+      "type": "int"
+     }
+    ],
+    "file": "tests/dbo/Tables/TestRuns.sql",
+    "hash": "9b83850e4309aa12",
+    "key": "dbo.testruns",
+    "line": 1,
+    "name": "TestRuns",
+    "params": null,
+    "schema": "dbo",
+    "type": "Table"
+   }
+  ],
+  "parseErrors": [],
+  "platform": "Sql160"
+ }
+}

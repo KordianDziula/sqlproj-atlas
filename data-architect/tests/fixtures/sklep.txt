@@ -1,0 +1,1111 @@
+# Dane projektu testowego „Sklep” (SSDT): operacje odtwarzane przez make_test_project.py.
+# Bloki: "### phase A|B", "### write <ścieżka>" (treść do następnego "### ", końce linii CRLF),
+# "### remove <ścieżka>", "### commit <data> <autor> <opis>", "### tag <nazwa>".
+
+### phase A
+### write .gitignore
+bin/
+obj/
+*.dbmdl
+*.jfm
+.vs/
+
+### write README.md
+# Sklep
+
+Bazy danych sklepu internetowego (SSDT): Sales, Staging, DWH.
+
+### write Sklep.sln
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "Sales", "src\Sales\Sales.sqlproj", "{1B6A1C2E-0F3D-4C55-9F61-6D3C1A2B4E01}"
+EndProject
+Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "Staging", "src\Staging\Staging.sqlproj", "{2C7B2D3F-1A4E-4D66-8A72-7E4D2B3C5F02}"
+EndProject
+Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "DWH", "src\DWH\DWH.sqlproj", "{3D8C3E4A-2B5F-4E77-9B83-8F5E3C4D6A03}"
+EndProject
+Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "Tests", "tests\Tests.sqlproj", "{4E9D4F5B-3C6A-4F88-AC94-9A6F4D5E7B04}"
+EndProject
+
+### write src/Sales/Sales.refactorlog
+<?xml version="1.0" encoding="utf-8"?>
+<Operations Version="1.0" xmlns="http://schemas.microsoft.com/sqlserver/dac/Serialization/2012/02">
+</Operations>
+### write src/Sales/Sales.sqlproj
+<Project Sdk="Microsoft.Build.Sql/1.0.0">
+  <PropertyGroup>
+    <Name>Sales</Name>
+    <DSP>Microsoft.Data.Tools.Schema.Sql.Sql160DatabaseSchemaProvider</DSP>
+    <ModelCollation>1045, CI</ModelCollation>
+  </PropertyGroup>
+  <ItemGroup>
+    <Build Remove="Scripts\**" />
+    <PostDeploy Include="Scripts\Script.PostDeployment.sql" />
+    <RefactorLog Include="Sales.refactorlog" />
+  </ItemGroup>
+  <ItemGroup>
+    <ArtifactReference Include="$(SystemDacpacsLocation)\SystemDacpacs\160\master.dacpac">
+      <SuppressMissingDependenciesErrors>False</SuppressMissingDependenciesErrors>
+      <DatabaseVariableLiteralValue>master</DatabaseVariableLiteralValue>
+    </ArtifactReference>
+  </ItemGroup>
+</Project>
+
+### write src/Sales/Scripts/Script.PostDeployment.sql
+/* Dane słownikowe */
+:r .\Seed\Currencies.sql
+:r .\Seed\OrderStatus.sql
+### write src/Sales/Scripts/Seed/Currencies.sql
+MERGE [dbo].[Currencies] AS t
+USING (VALUES ('PLN', N'Złoty'), ('EUR', N'Euro'), ('USD', N'Dolar')) AS s ([CurrencyCode], [Name]) ON t.[CurrencyCode] = s.[CurrencyCode]
+WHEN NOT MATCHED THEN INSERT ([CurrencyCode], [Name]) VALUES (s.[CurrencyCode], s.[Name]);
+### write src/Sales/Scripts/Seed/OrderStatus.sql
+MERGE [sales].[OrderStatus] AS t
+USING (VALUES (1, N'Nowe'), (2, N'Opłacone'), (3, N'Wysłane'), (9, N'Anulowane')) AS s ([StatusId], [Name]) ON t.[StatusId] = s.[StatusId]
+WHEN NOT MATCHED THEN INSERT ([StatusId], [Name]) VALUES (s.[StatusId], s.[Name]);
+### write src/Sales/Security/audit.sql
+CREATE SCHEMA [audit] AUTHORIZATION [dbo];
+### write src/Sales/Security/cat.sql
+CREATE SCHEMA [cat] AUTHORIZATION [dbo];
+### write src/Sales/Security/cfg.sql
+CREATE SCHEMA [cfg] AUTHORIZATION [dbo];
+### write src/Sales/Security/crm.sql
+CREATE SCHEMA [crm] AUTHORIZATION [dbo];
+### write src/Sales/Security/inv.sql
+CREATE SCHEMA [inv] AUTHORIZATION [dbo];
+### write src/Sales/Security/sales.sql
+CREATE SCHEMA [sales] AUTHORIZATION [dbo];
+### write src/Sales/audit/Stored Procedures/usp_WriteAudit.sql
+CREATE PROCEDURE [audit].[usp_WriteAudit]
+    @TableName SYSNAME,
+    @RowKey VARCHAR (20)
+AS
+    INSERT INTO [audit].[ChangeLog] ([TableName], [RowKey], [ChangedAt], [ChangedBy])
+    VALUES (@TableName, @RowKey, SYSUTCDATETIME(), SUSER_SNAME());
+### write src/Sales/audit/Tables/ChangeLog.sql
+CREATE TABLE [audit].[ChangeLog]
+(
+    [LogId]     BIGINT         IDENTITY (1, 1) NOT NULL,
+    [TableName] SYSNAME        NOT NULL,
+    [RowKey]    VARCHAR (20)   NOT NULL,
+    [ChangedAt] DATETIME2 (3)  NOT NULL,
+    [ChangedBy] NVARCHAR (128) NOT NULL,
+    CONSTRAINT [PK_ChangeLog] PRIMARY KEY CLUSTERED ([LogId] ASC)
+);
+### write src/Sales/audit/Tables/LoginAudit.sql
+CREATE TABLE [audit].[LoginAudit]
+(
+    [Id]        BIGINT         IDENTITY (1, 1) NOT NULL PRIMARY KEY,
+    [LoginName] NVARCHAR (128) NOT NULL,
+    [LoggedAt]  DATETIME2 (0)  NOT NULL
+);
+### write src/Sales/cat/Stored Procedures/usp_UpdatePrice.sql
+CREATE PROCEDURE [cat].[usp_UpdatePrice]
+    @ProductId INT,
+    @CurrencyCode CHAR (3),
+    @Price DECIMAL (18, 2)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    INSERT INTO [cat].[Prices] ([ProductId], [CurrencyCode], [Price], [ValidFrom])
+    VALUES (@ProductId, @CurrencyCode, @Price, CAST(GETDATE() AS DATE));
+END
+### write src/Sales/cat/Tables/Categories.sql
+CREATE TABLE [cat].[Categories]
+(
+    [CategoryId] INT            IDENTITY (1, 1) NOT NULL,
+    [Name]       NVARCHAR (100) NOT NULL,
+    [ParentId]   INT            NULL,
+    CONSTRAINT [PK_Categories] PRIMARY KEY CLUSTERED ([CategoryId] ASC),
+    CONSTRAINT [FK_Categories_Parent] FOREIGN KEY ([ParentId]) REFERENCES [cat].[Categories] ([CategoryId])
+);
+### write src/Sales/cat/Tables/Prices.sql
+CREATE TABLE [cat].[Prices]
+(
+    [ProductId]    INT             NOT NULL,
+    [CurrencyCode] CHAR (3)        NOT NULL,
+    [Price]        DECIMAL (18, 2) NOT NULL,
+    [ValidFrom]    DATE            NOT NULL,
+    CONSTRAINT [PK_Prices] PRIMARY KEY CLUSTERED ([ProductId] ASC, [CurrencyCode] ASC, [ValidFrom] ASC),
+    CONSTRAINT [FK_Prices_Products] FOREIGN KEY ([ProductId]) REFERENCES [cat].[Products] ([ProductId]),
+    CONSTRAINT [FK_Prices_Currencies] FOREIGN KEY ([CurrencyCode]) REFERENCES [dbo].[Currencies] ([CurrencyCode])
+);
+### write src/Sales/cat/Tables/Products.sql
+CREATE TABLE [cat].[Products]
+(
+    [ProductId]  INT            IDENTITY (1, 1) NOT NULL,
+    [Sku]        VARCHAR (30)   NOT NULL,
+    [Name]       NVARCHAR (200) NOT NULL,
+    [CategoryId] INT            NOT NULL,
+    [IsActive]   BIT            NOT NULL,
+    CONSTRAINT [PK_Products] PRIMARY KEY CLUSTERED ([ProductId] ASC),
+    CONSTRAINT [FK_Products_Categories] FOREIGN KEY ([CategoryId]) REFERENCES [cat].[Categories] ([CategoryId])
+);
+### write src/Sales/cat/Views/vw_Catalog.sql
+CREATE VIEW [cat].[vw_Catalog]
+AS
+SELECT p.[ProductId], p.[Sku], p.[Name], c.[Name] AS [Category], pr.[Price], pr.[CurrencyCode]
+FROM [cat].[Products] AS p
+INNER JOIN [cat].[Categories] AS c ON c.[CategoryId] = p.[CategoryId]
+OUTER APPLY (SELECT TOP (1) x.[Price], x.[CurrencyCode] FROM [cat].[Prices] AS x WHERE x.[ProductId] = p.[ProductId] ORDER BY x.[ValidFrom] DESC) AS pr
+WHERE p.[IsActive] = 1;
+### write src/Sales/cfg/Tables/PurgeTables.sql
+CREATE TABLE [cfg].[PurgeTables]
+(
+    [TableName]     SYSNAME NOT NULL PRIMARY KEY,
+    [RetentionDays] INT     NOT NULL
+);
+### write src/Sales/crm/Stored Procedures/usp_GetCustomerCrm.sql
+CREATE PROCEDURE [crm].[usp_GetCustomerCrm]
+    @CrmId VARCHAR (18)
+AS
+BEGIN
+    SELECT * FROM OPENQUERY(CRM, 'SELECT Id, Email, Phone, Segment FROM Contact');
+END
+### write src/Sales/crm/Stored Procedures/usp_SyncFromCrm.sql
+CREATE PROCEDURE [crm].[usp_SyncFromCrm]
+AS
+BEGIN
+    SET NOCOUNT ON;
+    MERGE [crm].[Customers] AS t
+    USING (SELECT Id, Email, Name FROM OPENQUERY(CRM_LINK, 'SELECT Id, Email, Name FROM Contact')) AS s
+        ON t.[CrmId] = s.Id
+    WHEN MATCHED THEN UPDATE SET t.[Email] = s.Email, t.[FullName] = s.Name
+    WHEN NOT MATCHED THEN INSERT ([Email], [FullName], [CountryCode], [CrmId]) VALUES (s.Email, s.Name, 'PL', s.Id);
+END
+### write src/Sales/crm/Tables/Addresses.sql
+CREATE TABLE [crm].[Addresses]
+(
+    [AddressId]  INT            IDENTITY (1, 1) NOT NULL,
+    [CustomerId] INT            NOT NULL,
+    [Street]     NVARCHAR (200) NOT NULL,
+    [City]       NVARCHAR (100) NOT NULL,
+    [PostalCode] VARCHAR (10)   NOT NULL,
+    CONSTRAINT [PK_Addresses] PRIMARY KEY CLUSTERED ([AddressId] ASC),
+    CONSTRAINT [FK_Addresses_Customers] FOREIGN KEY ([CustomerId]) REFERENCES [crm].[Customers] ([CustomerId])
+);
+### write src/Sales/crm/Tables/Consents.sql
+CREATE TABLE [crm].[Consents]
+(
+    [CustomerId]  INT          NOT NULL,
+    [ConsentType] VARCHAR (30) NOT NULL,
+    [Granted]     BIT          NOT NULL,
+    [ChangedAt]   DATETIME2 (0) NOT NULL,
+    CONSTRAINT [PK_Consents] PRIMARY KEY CLUSTERED ([CustomerId] ASC, [ConsentType] ASC),
+    CONSTRAINT [FK_Consents_Customers] FOREIGN KEY ([CustomerId]) REFERENCES [crm].[Customers] ([CustomerId])
+);
+### write src/Sales/crm/Tables/Customers.sql
+CREATE TABLE [crm].[Customers]
+(
+    [CustomerId]  INT            IDENTITY (1, 1) NOT NULL,
+    [Email]       NVARCHAR (256) NOT NULL,
+    [FullName]    NVARCHAR (200) NOT NULL,
+    [CountryCode] CHAR (2)       NOT NULL,
+    [CrmId]       VARCHAR (18)   NULL,
+    [CreatedAt]   DATETIME2 (0)  CONSTRAINT [DF_Customers_CreatedAt] DEFAULT (sysutcdatetime()) NOT NULL,
+    CONSTRAINT [PK_Customers] PRIMARY KEY CLUSTERED ([CustomerId] ASC),
+    CONSTRAINT [FK_Customers_Countries] FOREIGN KEY ([CountryCode]) REFERENCES [dbo].[Countries] ([CountryCode])
+);
+### write src/Sales/crm/Views/vw_ActiveCustomers.sql
+CREATE VIEW [crm].[vw_ActiveCustomers]
+AS
+SELECT c.[CustomerId], c.[Email], c.[FullName], co.[Name] AS [Country]
+FROM [crm].[Customers] AS c
+INNER JOIN [dbo].[Countries] AS co ON co.[CountryCode] = c.[CountryCode]
+WHERE EXISTS (SELECT 1 FROM [crm].[Consents] AS x WHERE x.[CustomerId] = c.[CustomerId] AND x.[Granted] = 1);
+### write src/Sales/dbo/Functions/fn_FormatMoney.sql
+CREATE FUNCTION [dbo].[fn_FormatMoney] (@Amount DECIMAL (18, 2), @CurrencyCode CHAR (3))
+RETURNS NVARCHAR (40)
+AS
+BEGIN
+    RETURN FORMAT(@Amount, 'N2') + N' ' + @CurrencyCode;
+END
+### write src/Sales/dbo/Stored Procedures/usp_PurgeTable.sql
+CREATE PROCEDURE [dbo].[usp_PurgeTable]
+    @TableName SYSNAME
+AS
+BEGIN
+    SET NOCOUNT ON;
+    IF EXISTS (SELECT 1 FROM [cfg].[PurgeTables] WHERE [TableName] = @TableName)
+        EXEC ('TRUNCATE TABLE ' + @TableName);
+END
+### write src/Sales/dbo/Tables/Countries.sql
+CREATE TABLE [dbo].[Countries]
+(
+    [CountryCode] CHAR (2)       NOT NULL,
+    [Name]        NVARCHAR (100) NOT NULL,
+    CONSTRAINT [PK_Countries] PRIMARY KEY CLUSTERED ([CountryCode] ASC)
+);
+### write src/Sales/dbo/Tables/Currencies.sql
+CREATE TABLE [dbo].[Currencies]
+(
+    [CurrencyCode] CHAR (3)      NOT NULL,
+    [Name]         NVARCHAR (50) NOT NULL,
+    [IsActive]     BIT           CONSTRAINT [DF_Currencies_IsActive] DEFAULT ((1)) NOT NULL,
+    CONSTRAINT [PK_Currencies] PRIMARY KEY CLUSTERED ([CurrencyCode] ASC)
+);
+### write src/Sales/dbo/Tables/KpiCache.sql
+CREATE TABLE [dbo].[KpiCache]
+(
+    [KpiName]  VARCHAR (50)    NOT NULL PRIMARY KEY,
+    [KpiValue] DECIMAL (18, 4) NULL,
+    [Computed] DATETIME2 (0)   NOT NULL
+);
+### write src/Sales/inv/Stored Procedures/usp_ImportStock.sql
+CREATE PROCEDURE [inv].[usp_ImportStock]
+AS
+BEGIN
+    SET NOCOUNT ON;
+    MERGE [inv].[StockLevels] AS t
+    USING (SELECT [ProductId], [WarehouseId], [Qty] FROM [ImportDb].[dbo].[StockFeed]) AS s
+        ON t.[ProductId] = s.[ProductId] AND t.[WarehouseId] = s.[WarehouseId]
+    WHEN MATCHED THEN UPDATE SET t.[Qty] = s.[Qty];
+END
+### write src/Sales/inv/Stored Procedures/usp_RecalcStock_old.sql
+CREATE PROCEDURE [inv].[usp_RecalcStock_old]
+AS
+BEGIN
+    UPDATE [inv].[StockLevels] SET [Qty] = 0 WHERE [Qty] < 0;
+END
+### write src/Sales/inv/Stored Procedures/usp_ReserveStock.sql
+CREATE PROCEDURE [inv].[usp_ReserveStock]
+    @OrderId INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    INSERT INTO [inv].[Reservations] ([OrderId], [ProductId], [Qty])
+    SELECT i.[OrderId], i.[ProductId], i.[Quantity] FROM [sales].[OrderItems] AS i WHERE i.[OrderId] = @OrderId;
+    UPDATE s SET s.[Qty] = s.[Qty] - i.[Quantity]
+    FROM [inv].[StockLevels] AS s
+    INNER JOIN [sales].[OrderItems] AS i ON i.[ProductId] = s.[ProductId]
+    WHERE i.[OrderId] = @OrderId AND s.[WarehouseId] = 1;
+END
+### write src/Sales/inv/Tables/Reservations.sql
+CREATE TABLE [inv].[Reservations]
+(
+    [ReservationId] INT IDENTITY (1, 1) NOT NULL,
+    [OrderId]       INT NOT NULL,
+    [ProductId]     INT NOT NULL,
+    [Qty]           INT NOT NULL,
+    CONSTRAINT [PK_Reservations] PRIMARY KEY CLUSTERED ([ReservationId] ASC),
+    CONSTRAINT [FK_Reservations_Orders] FOREIGN KEY ([OrderId]) REFERENCES [sales].[Orders] ([OrderId])
+);
+### write src/Sales/inv/Tables/StockLevels.sql
+CREATE TABLE [inv].[StockLevels]
+(
+    [ProductId]   INT NOT NULL,
+    [WarehouseId] INT NOT NULL,
+    [Qty]         INT NOT NULL,
+    CONSTRAINT [PK_StockLevels] PRIMARY KEY CLUSTERED ([ProductId] ASC, [WarehouseId] ASC),
+    CONSTRAINT [FK_StockLevels_Products] FOREIGN KEY ([ProductId]) REFERENCES [cat].[Products] ([ProductId]),
+    CONSTRAINT [FK_StockLevels_Warehouses] FOREIGN KEY ([WarehouseId]) REFERENCES [inv].[Warehouses] ([WarehouseId])
+);
+### write src/Sales/inv/Tables/Warehouses.sql
+CREATE TABLE [inv].[Warehouses]
+(
+    [WarehouseId] INT           NOT NULL,
+    [Name]        NVARCHAR (80) NOT NULL,
+    CONSTRAINT [PK_Warehouses] PRIMARY KEY CLUSTERED ([WarehouseId] ASC)
+);
+### write src/Sales/sales/Functions/fn_OrderTotal.sql
+CREATE FUNCTION [sales].[fn_OrderTotal] (@OrderId INT)
+RETURNS DECIMAL (18, 2)
+AS
+BEGIN
+    RETURN (SELECT SUM([LineTotal]) FROM [sales].[OrderItems] WHERE [OrderId] = @OrderId);
+END
+### write src/Sales/sales/Sequences/OrderNumberSeq.sql
+CREATE SEQUENCE [sales].[OrderNumberSeq] AS BIGINT START WITH 100000 INCREMENT BY 1;
+### write src/Sales/sales/Stored Procedures/usp_CancelOrder.sql
+CREATE PROCEDURE [sales].[usp_CancelOrder]
+    @OrderId INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    UPDATE [sales].[Orders] SET [StatusId] = 9 WHERE [OrderId] = @OrderId;
+    DELETE FROM [inv].[Reservations] WHERE [OrderId] = @OrderId;
+END
+### write src/Sales/sales/Stored Procedures/usp_CreateOrder.sql
+CREATE PROCEDURE [sales].[usp_CreateOrder]
+    @CustomerId INT,
+    @Items [sales].[OrderItemList] READONLY,
+    @OrderId INT OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    BEGIN TRANSACTION;
+    INSERT INTO [sales].[Orders] ([CustomerId], [OrderDate], [StatusId], [TotalAmount])
+    VALUES (@CustomerId, SYSUTCDATETIME(), 1, 0);
+    SET @OrderId = SCOPE_IDENTITY();
+    INSERT INTO [sales].[OrderItems] ([OrderId], [LineNo], [ProductId], [Quantity], [UnitPrice])
+    SELECT @OrderId, ROW_NUMBER() OVER (ORDER BY i.[ProductId]), i.[ProductId], i.[Quantity], p.[Price]
+    FROM @Items AS i
+    CROSS APPLY (SELECT TOP (1) x.[Price] FROM [cat].[Prices] AS x WHERE x.[ProductId] = i.[ProductId] ORDER BY x.[ValidFrom] DESC) AS p;
+    UPDATE o SET o.[TotalAmount] = [sales].[fn_OrderTotal](@OrderId)
+    FROM [sales].[Orders] AS o WHERE o.[OrderId] = @OrderId;
+    COMMIT TRANSACTION;
+END
+### write src/Sales/sales/Stored Procedures/usp_GetOrderSummary.sql
+CREATE PROCEDURE [sales].[usp_GetOrderSummary]
+    @OrderId INT
+AS
+BEGIN
+    SELECT o.[OrderId], o.[OrderDate], s.[Name] AS [Status], o.[DiscountCode],
+           [sales].[fn_OrderTotal](o.[OrderId]) AS [Total],
+           [dbo].[fn_FormatMoney](o.[TotalAmount], 'PLN') AS [TotalText]
+    FROM [sales].[Orders] AS o
+    INNER JOIN [sales].[OrderStatus] AS s ON s.[StatusId] = o.[StatusId]
+    WHERE o.[OrderId] = @OrderId;
+END
+### write src/Sales/sales/Tables/OrderItems.sql
+CREATE TABLE [sales].[OrderItems]
+(
+    [OrderId]   INT             NOT NULL,
+    [LineNo]    SMALLINT        NOT NULL,
+    [ProductId] INT             NOT NULL,
+    [Quantity]  INT             NOT NULL,
+    [UnitPrice] DECIMAL (18, 2) NOT NULL,
+    [LineTotal] AS ([Quantity] * [UnitPrice]),
+    CONSTRAINT [PK_OrderItems] PRIMARY KEY CLUSTERED ([OrderId] ASC, [LineNo] ASC),
+    CONSTRAINT [FK_OrderItems_Orders] FOREIGN KEY ([OrderId]) REFERENCES [sales].[Orders] ([OrderId]),
+    CONSTRAINT [FK_OrderItems_Products] FOREIGN KEY ([ProductId]) REFERENCES [cat].[Products] ([ProductId])
+);
+### write src/Sales/sales/Tables/OrderStatus.sql
+CREATE TABLE [sales].[OrderStatus]
+(
+    [StatusId] TINYINT       NOT NULL,
+    [Name]     NVARCHAR (50) NOT NULL,
+    CONSTRAINT [PK_OrderStatus] PRIMARY KEY CLUSTERED ([StatusId] ASC)
+);
+### write src/Sales/sales/Tables/Orders.sql
+CREATE TABLE [sales].[Orders]
+(
+    [OrderId]      INT             IDENTITY (1, 1) NOT NULL,
+    [CustomerId]   INT             NOT NULL,
+    [OrderDate]    DATETIME2 (0)   NOT NULL,
+    [StatusId]     TINYINT         NOT NULL,
+    [TotalAmount]  DECIMAL (18, 2) NOT NULL,
+    [DiscountCode] VARCHAR (20)    NULL,
+    [CreatedBy]    NVARCHAR (128)  CONSTRAINT [DF_Orders_CreatedBy] DEFAULT (suser_sname()) NOT NULL,
+    CONSTRAINT [PK_Orders] PRIMARY KEY CLUSTERED ([OrderId] ASC),
+    CONSTRAINT [FK_Orders_Customers] FOREIGN KEY ([CustomerId]) REFERENCES [crm].[Customers] ([CustomerId]),
+    CONSTRAINT [FK_Orders_OrderStatus] FOREIGN KEY ([StatusId]) REFERENCES [sales].[OrderStatus] ([StatusId])
+);
+GO
+CREATE NONCLUSTERED INDEX [IX_Orders_CustomerId_OrderDate]
+    ON [sales].[Orders]([CustomerId] ASC, [OrderDate] ASC);
+### write src/Sales/sales/Tables/Shipments.sql
+CREATE TABLE [sales].[Shipments]
+(
+    [ShipmentId] INT           IDENTITY (1, 1) NOT NULL,
+    [OrderId]    INT           NOT NULL,
+    [Carrier]    VARCHAR (30)  NOT NULL,
+    [TrackingNo] VARCHAR (50)  NULL,
+    [ShippedAt]  DATETIME2 (0) NULL,
+    CONSTRAINT [PK_Shipments] PRIMARY KEY CLUSTERED ([ShipmentId] ASC),
+    CONSTRAINT [FK_Shipments_Orders] FOREIGN KEY ([OrderId]) REFERENCES [sales].[Orders] ([OrderId])
+);
+### write src/Sales/sales/Triggers/trg_Orders_Audit.sql
+CREATE TRIGGER [sales].[trg_Orders_Audit] ON [sales].[Orders]
+AFTER UPDATE, DELETE
+AS
+BEGIN
+    SET NOCOUNT ON;
+    INSERT INTO [audit].[ChangeLog] ([TableName], [RowKey], [ChangedAt], [ChangedBy])
+    SELECT 'sales.Orders', CAST(d.[OrderId] AS VARCHAR (20)), SYSUTCDATETIME(), SUSER_SNAME()
+    FROM deleted AS d;
+END
+### write src/Sales/sales/Types/OrderItemList.sql
+CREATE TYPE [sales].[OrderItemList] AS TABLE
+(
+    [ProductId] INT NOT NULL,
+    [Quantity]  INT NOT NULL
+);
+### write src/Sales/sales/Views/vw_OpenOrders.sql
+CREATE VIEW [sales].[vw_OpenOrders]
+AS
+SELECT o.[OrderId], o.[CustomerId], o.[OrderDate], s.[Name] AS [Status]
+FROM [sales].[Orders] AS o
+INNER JOIN [sales].[OrderStatus] AS s ON s.[StatusId] = o.[StatusId]
+WHERE o.[StatusId] < 5;
+### write tests/Tests.sqlproj
+<Project Sdk="Microsoft.Build.Sql/1.0.0">
+  <PropertyGroup>
+    <Name>Tests</Name>
+    <DSP>Microsoft.Data.Tools.Schema.Sql.Sql160DatabaseSchemaProvider</DSP>
+    <ModelCollation>1045, CI</ModelCollation>
+  </PropertyGroup>
+  <ItemGroup>
+    <Build Remove="Scripts\**" />
+    <PostDeploy Include="Scripts\Script.PostDeployment.sql" />
+    <RefactorLog Include="Tests.refactorlog" />
+  </ItemGroup>
+  <ItemGroup>
+    <ArtifactReference Include="$(SystemDacpacsLocation)\SystemDacpacs\160\master.dacpac">
+      <SuppressMissingDependenciesErrors>False</SuppressMissingDependenciesErrors>
+      <DatabaseVariableLiteralValue>master</DatabaseVariableLiteralValue>
+    </ArtifactReference>
+  </ItemGroup>
+</Project>
+
+### write tests/dbo/Tables/TestRuns.sql
+CREATE TABLE [dbo].[TestRuns] ([Id] INT NOT NULL PRIMARY KEY);
+### commit 2024-03-11 mz Initial import of Sales database
+### write src/DWH/DWH.sqlproj
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <Name>DWH</Name>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectVersion>4.1</ProjectVersion>
+    <ProjectGuid>{3D8C3E4A-2B5F-4E77-9B83-8F5E3C4D6A03}</ProjectGuid>
+    <DSP>Microsoft.Data.Tools.Schema.Sql.Sql150DatabaseSchemaProvider</DSP>
+    <OutputType>Database</OutputType>
+    <RootNamespace>DWH</RootNamespace>
+    <AssemblyName>DWH</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+  </PropertyGroup>
+  <Import Condition="'$(SQLDBExtensionsRefPath)' != ''" Project="$(SQLDBExtensionsRefPath)\Microsoft.Data.Tools.Schema.SqlTasks.targets" />
+  <ItemGroup>
+    <Folder Include="Security\" />
+    <Folder Include="arch\Stored Procedures\" />
+    <Folder Include="arch\Views\" />
+    <Folder Include="dbo\Synonyms\" />
+    <Folder Include="dim\Stored Procedures\" />
+    <Folder Include="dim\Tables\" />
+    <Folder Include="etl\Stored Procedures\" />
+    <Folder Include="etl\Tables\" />
+    <Folder Include="fact\Stored Procedures\" />
+    <Folder Include="fact\Tables\" />
+    <Folder Include="mart\Views\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Build Include="Security\arch.sql" />
+    <Build Include="Security\dim.sql" />
+    <Build Include="Security\etl.sql" />
+    <Build Include="Security\fact.sql" />
+    <Build Include="Security\mart.sql" />
+    <Build Include="arch\Stored Procedures\usp_ArchiveOrders.sql" />
+    <Build Include="arch\Views\vw_OrdersHistory.sql" />
+    <Build Include="dbo\Synonyms\syn_StgOrders.sql" />
+    <Build Include="dim\Stored Procedures\usp_LoadDimCustomer.sql" />
+    <Build Include="dim\Tables\DimCustomer.sql" />
+    <Build Include="dim\Tables\DimDate.sql" />
+    <Build Include="dim\Tables\DimProduct.sql" />
+    <Build Include="etl\Stored Procedures\usp_RunNightly.sql" />
+    <Build Include="etl\Tables\EtlLog.sql" />
+    <Build Include="fact\Stored Procedures\usp_LoadFactSales.sql" />
+    <Build Include="fact\Tables\FactSales.sql" />
+    <Build Include="mart\Views\vw_SalesByMonth.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <SqlCmdVariable Include="Staging">
+      <DefaultValue>Staging</DefaultValue>
+      <Value>$(SqlCmdVar__1)</Value>
+    </SqlCmdVariable>
+    <SqlCmdVariable Include="Archive">
+      <DefaultValue>SalesArchive</DefaultValue>
+      <Value>$(SqlCmdVar__2)</Value>
+    </SqlCmdVariable>
+    <SqlCmdVariable Include="ErpDb">
+      <DefaultValue></DefaultValue>
+      <Value>$(SqlCmdVar__3)</Value>
+    </SqlCmdVariable>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Staging\Staging.sqlproj">
+      <Name>Staging</Name>
+      <Project>{2C7B2D3F-1A4E-4D66-8A72-7E4D2B3C5F02}</Project>
+      <Private>True</Private>
+      <SuppressMissingDependenciesErrors>False</SuppressMissingDependenciesErrors>
+      <DatabaseSqlCmdVariable>Staging</DatabaseSqlCmdVariable>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <PostDeploy Include="Scripts\Script.PostDeployment.sql" />
+  </ItemGroup>
+</Project>
+
+### write src/DWH/Scripts/Script.PostDeployment.sql
+PRINT 'DWH deployed';
+### write src/DWH/Security/arch.sql
+CREATE SCHEMA [arch] AUTHORIZATION [dbo];
+### write src/DWH/Security/dim.sql
+CREATE SCHEMA [dim] AUTHORIZATION [dbo];
+### write src/DWH/Security/etl.sql
+CREATE SCHEMA [etl] AUTHORIZATION [dbo];
+### write src/DWH/Security/fact.sql
+CREATE SCHEMA [fact] AUTHORIZATION [dbo];
+### write src/DWH/Security/mart.sql
+CREATE SCHEMA [mart] AUTHORIZATION [dbo];
+### write src/DWH/arch/Stored Procedures/usp_ArchiveOrders.sql
+CREATE PROCEDURE [arch].[usp_ArchiveOrders]
+    @Before DATE
+AS
+BEGIN
+    INSERT INTO [$(Archive)].[dbo].[OrdersHistory] ([OrderId], [Revenue])
+    SELECT [OrderId], [Revenue] FROM [fact].[FactSales] AS f
+    INNER JOIN [dim].[DimDate] AS d ON d.[DateKey] = f.[DateKey] WHERE d.[Date] < @Before;
+END
+### write src/DWH/arch/Views/vw_OrdersHistory.sql
+CREATE VIEW [arch].[vw_OrdersHistory]
+AS
+SELECT [OrderId], [Revenue] FROM [$(Archive)].[dbo].[OrdersHistory];
+### write src/DWH/dbo/Synonyms/syn_StgOrders.sql
+CREATE SYNONYM [dbo].[syn_StgOrders] FOR [$(Staging)].[stg].[stg_Orders];
+### write src/DWH/dim/Stored Procedures/usp_LoadDimCustomer.sql
+CREATE PROCEDURE [dim].[usp_LoadDimCustomer]
+AS
+BEGIN
+    MERGE [dim].[DimCustomer] AS t
+    USING (SELECT [CustomerId], [FullName], [Country] FROM [$(Staging)].[stg].[stg_Customers]) AS s ON t.[CustomerId] = s.[CustomerId]
+    WHEN MATCHED THEN UPDATE SET t.[FullName] = s.[FullName], t.[Country] = s.[Country]
+    WHEN NOT MATCHED THEN INSERT ([CustomerId], [FullName], [Country]) VALUES (s.[CustomerId], s.[FullName], s.[Country]);
+END
+### write src/DWH/dim/Tables/DimCustomer.sql
+CREATE TABLE [dim].[DimCustomer]
+(
+    [CustomerKey] INT            IDENTITY (1, 1) NOT NULL PRIMARY KEY,
+    [CustomerId]  INT            NOT NULL,
+    [FullName]    NVARCHAR (200) NOT NULL,
+    [Country]     CHAR (2)       NOT NULL
+);
+### write src/DWH/dim/Tables/DimDate.sql
+CREATE TABLE [dim].[DimDate]
+(
+    [DateKey] INT  NOT NULL PRIMARY KEY,
+    [Date]    DATE NOT NULL,
+    [Year]    INT  NOT NULL,
+    [Month]   INT  NOT NULL
+);
+### write src/DWH/dim/Tables/DimProduct.sql
+CREATE TABLE [dim].[DimProduct]
+(
+    [ProductKey] INT            IDENTITY (1, 1) NOT NULL PRIMARY KEY,
+    [ProductId]  INT            NOT NULL,
+    [Name]       NVARCHAR (200) NOT NULL,
+    [Category]   NVARCHAR (100) NULL
+);
+### write src/DWH/etl/Stored Procedures/usp_RunNightly.sql
+CREATE PROCEDURE [etl].[usp_RunNightly]
+AS
+BEGIN
+    EXEC [dim].[usp_LoadDimCustomer];
+    EXEC [fact].[usp_LoadFactSales];
+    INSERT INTO [etl].[EtlLog] ([Step], [Logged]) VALUES ('nightly', SYSUTCDATETIME());
+END
+### write src/DWH/etl/Tables/EtlLog.sql
+CREATE TABLE [etl].[EtlLog]
+(
+    [Id]      INT           IDENTITY (1, 1) NOT NULL PRIMARY KEY,
+    [Step]    VARCHAR (50)  NOT NULL,
+    [Logged]  DATETIME2 (0) NOT NULL
+);
+### write src/DWH/fact/Stored Procedures/usp_LoadFactSales.sql
+CREATE PROCEDURE [fact].[usp_LoadFactSales]
+AS
+BEGIN
+    INSERT INTO [fact].[FactSales] ([OrderId], [CustomerKey], [ProductKey], [DateKey], [Revenue])
+    SELECT o.[OrderId], c.[CustomerKey], 0, CONVERT(INT, FORMAT(o.[OrderDate], 'yyyyMMdd')), o.[TotalAmount]
+    FROM [$(Staging)].[stg].[stg_Orders] AS o
+    INNER JOIN [dim].[DimCustomer] AS c ON c.[CustomerId] = o.[CustomerId];
+    UPDATE f SET f.[Revenue] = f.[Revenue] - inv.[Correction]
+    FROM [fact].[FactSales] AS f
+    INNER JOIN [$(ErpDb)].[dbo].[Invoices] AS inv ON inv.[OrderId] = f.[OrderId];
+END
+### write src/DWH/fact/Tables/FactSales.sql
+CREATE TABLE [fact].[FactSales]
+(
+    [OrderId]     INT             NOT NULL,
+    [CustomerKey] INT             NOT NULL,
+    [ProductKey]  INT             NOT NULL,
+    [DateKey]     INT             NOT NULL,
+    [Revenue]     DECIMAL (18, 2) NOT NULL,
+    CONSTRAINT [FK_FactSales_DimCustomer] FOREIGN KEY ([CustomerKey]) REFERENCES [dim].[DimCustomer] ([CustomerKey]),
+    CONSTRAINT [FK_FactSales_DimProduct] FOREIGN KEY ([ProductKey]) REFERENCES [dim].[DimProduct] ([ProductKey]),
+    CONSTRAINT [FK_FactSales_DimDate] FOREIGN KEY ([DateKey]) REFERENCES [dim].[DimDate] ([DateKey])
+);
+### write src/DWH/mart/Views/vw_SalesByMonth.sql
+CREATE VIEW [mart].[vw_SalesByMonth]
+AS
+SELECT d.[Year], d.[Month], SUM(f.[Revenue]) AS [Revenue]
+FROM [fact].[FactSales] AS f
+INNER JOIN [dim].[DimDate] AS d ON d.[DateKey] = f.[DateKey]
+GROUP BY d.[Year], d.[Month];
+### write src/Staging/Scripts/Script.PostDeployment.sql
+/* brak danych słownikowych */
+PRINT 'Staging deployed';
+### write src/Staging/Security/crm_stg.sql
+CREATE SCHEMA [crm_stg] AUTHORIZATION [dbo];
+### write src/Staging/Security/etl.sql
+CREATE SCHEMA [etl] AUTHORIZATION [dbo];
+### write src/Staging/Security/stg.sql
+CREATE SCHEMA [stg] AUTHORIZATION [dbo];
+### write src/Staging/Staging.sqlproj
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <Name>Staging</Name>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectVersion>4.1</ProjectVersion>
+    <ProjectGuid>{2C7B2D3F-1A4E-4D66-8A72-7E4D2B3C5F02}</ProjectGuid>
+    <DSP>Microsoft.Data.Tools.Schema.Sql.Sql150DatabaseSchemaProvider</DSP>
+    <OutputType>Database</OutputType>
+    <RootNamespace>Staging</RootNamespace>
+    <AssemblyName>Staging</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+  </PropertyGroup>
+  <Import Condition="'$(SQLDBExtensionsRefPath)' != ''" Project="$(SQLDBExtensionsRefPath)\Microsoft.Data.Tools.Schema.SqlTasks.targets" />
+  <ItemGroup>
+    <Folder Include="Security\" />
+    <Folder Include="crm_stg\Stored Procedures\" />
+    <Folder Include="crm_stg\Tables\" />
+    <Folder Include="etl\Stored Procedures\" />
+    <Folder Include="etl\Tables\" />
+    <Folder Include="stg\Stored Procedures\" />
+    <Folder Include="stg\Tables\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Build Include="Security\crm_stg.sql" />
+    <Build Include="Security\etl.sql" />
+    <Build Include="Security\stg.sql" />
+    <Build Include="crm_stg\Stored Procedures\usp_LoadFromCrm.sql" />
+    <Build Include="crm_stg\Tables\stg_Contacts.sql" />
+    <Build Include="etl\Stored Procedures\usp_LogRun.sql" />
+    <Build Include="etl\Tables\EtlRuns.sql" />
+    <Build Include="stg\Stored Procedures\usp_LoadFromSales.sql" />
+    <Build Include="stg\Tables\stg_Customers.sql" />
+    <Build Include="stg\Tables\stg_OrderItems.sql" />
+    <Build Include="stg\Tables\stg_Orders.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <SqlCmdVariable Include="Sales">
+      <DefaultValue>Sales</DefaultValue>
+      <Value>$(SqlCmdVar__1)</Value>
+    </SqlCmdVariable>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Sales\Sales.sqlproj">
+      <Name>Sales</Name>
+      <Project>{1B6A1C2E-0F3D-4C55-9F61-6D3C1A2B4E01}</Project>
+      <Private>True</Private>
+      <SuppressMissingDependenciesErrors>False</SuppressMissingDependenciesErrors>
+      <DatabaseSqlCmdVariable>Sales</DatabaseSqlCmdVariable>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <PostDeploy Include="Scripts\Script.PostDeployment.sql" />
+  </ItemGroup>
+</Project>
+
+### write src/Staging/crm_stg/Stored Procedures/usp_LoadFromCrm.sql
+CREATE PROCEDURE [crm_stg].[usp_LoadFromCrm]
+AS
+BEGIN
+    INSERT INTO [crm_stg].[stg_Contacts] ([CrmId], [Email], [Segment])
+    SELECT Id, Email, Segment FROM OPENQUERY(CRM, 'SELECT Id, Email, Segment FROM Contact');
+END
+### write src/Staging/crm_stg/Tables/stg_Contacts.sql
+CREATE TABLE [crm_stg].[stg_Contacts]
+(
+    [CrmId]   VARCHAR (18)   NOT NULL PRIMARY KEY,
+    [Email]   NVARCHAR (256) NULL,
+    [Segment] VARCHAR (20)   NULL
+);
+### write src/Staging/etl/Stored Procedures/usp_LogRun.sql
+CREATE PROCEDURE [etl].[usp_LogRun]
+    @Process VARCHAR (50)
+AS
+    INSERT INTO [etl].[EtlRuns] ([Process], [StartedAt]) VALUES (@Process, SYSUTCDATETIME());
+### write src/Staging/etl/Tables/EtlRuns.sql
+CREATE TABLE [etl].[EtlRuns]
+(
+    [RunId]     INT           IDENTITY (1, 1) NOT NULL PRIMARY KEY,
+    [Process]   VARCHAR (50)  NOT NULL,
+    [StartedAt] DATETIME2 (0) NOT NULL
+);
+### write src/Staging/stg/Stored Procedures/usp_LoadFromSales.sql
+CREATE PROCEDURE [stg].[usp_LoadFromSales]
+AS
+BEGIN
+    SET NOCOUNT ON;
+    TRUNCATE TABLE [stg].[stg_OrderItems];
+    DELETE FROM [stg].[stg_Orders];
+    INSERT INTO [stg].[stg_Orders] ([OrderId], [CustomerId], [OrderDate], [TotalAmount], [LoadedAt])
+    SELECT [OrderId], [CustomerId], [OrderDate], [TotalAmount], SYSUTCDATETIME() FROM [$(Sales)].[sales].[Orders];
+    INSERT INTO [stg].[stg_Customers] ([CustomerId], [FullName], [Country])
+    SELECT [CustomerId], [FullName], [CountryCode] FROM [$(Sales)].[crm].[Customers];
+    EXEC [etl].[usp_LogRun] @Process = 'LoadFromSales';
+END
+### write src/Staging/stg/Tables/stg_Customers.sql
+CREATE TABLE [stg].[stg_Customers]
+(
+    [CustomerId] INT            NOT NULL PRIMARY KEY,
+    [FullName]   NVARCHAR (200) NOT NULL,
+    [Country]    CHAR (2)       NOT NULL
+);
+### write src/Staging/stg/Tables/stg_OrderItems.sql
+CREATE TABLE [stg].[stg_OrderItems]
+(
+    [OrderId]   INT             NOT NULL,
+    [LineNo]    SMALLINT        NOT NULL,
+    [ProductId] INT             NOT NULL,
+    [LineTotal] DECIMAL (18, 2) NOT NULL,
+    CONSTRAINT [PK_stg_OrderItems] PRIMARY KEY ([OrderId], [LineNo]),
+    CONSTRAINT [FK_stg_OrderItems_Orders] FOREIGN KEY ([OrderId]) REFERENCES [stg].[stg_Orders] ([OrderId])
+);
+### write src/Staging/stg/Tables/stg_Orders.sql
+CREATE TABLE [stg].[stg_Orders]
+(
+    [OrderId]     INT             NOT NULL PRIMARY KEY,
+    [CustomerId]  INT             NOT NULL,
+    [OrderDate]   DATETIME2 (0)   NOT NULL,
+    [TotalAmount] DECIMAL (18, 2) NOT NULL,
+    [LoadedAt]    DATETIME2 (0)   NOT NULL
+);
+### commit 2024-04-22 mz Add Staging and DWH projects
+### write src/Sales/Security/rpt.sql
+CREATE SCHEMA [rpt] AUTHORIZATION [dbo];
+### write src/Sales/rpt/Stored Procedures/usp_DynamicPivot.sql
+CREATE PROCEDURE [rpt].[usp_DynamicPivot]
+    @Columns NVARCHAR (MAX)
+AS
+BEGIN
+    DECLARE @pivotSql NVARCHAR (MAX) = N'SELECT * FROM rpt.vw_SalesReport PIVOT (SUM(Revenue) FOR Product IN (' + @Columns + N')) AS p';
+    EXEC (@pivotSql);
+END
+### write src/Sales/rpt/Stored Procedures/usp_MonthlyKpi.sql
+CREATE PROCEDURE [rpt].[usp_MonthlyKpi]
+    @Year INT,
+    @Month INT
+AS
+BEGIN
+    SELECT SUM([Revenue]) AS [Revenue] FROM [rpt].[vw_SalesReport]
+    WHERE YEAR([Day]) = @Year AND MONTH([Day]) = @Month;
+END
+### write src/Sales/rpt/Views/vw_LegacyKpi.sql
+CREATE VIEW [rpt].[vw_LegacyKpi]
+AS
+SELECT [KpiName], [KpiValue] FROM [dbo].[KpiCache];
+### write src/Sales/rpt/Views/vw_SalesReport.sql
+CREATE VIEW [rpt].[vw_SalesReport]
+AS
+SELECT CAST(o.[OrderDate] AS DATE) AS [Day], p.[Name] AS [Product], SUM(i.[LineTotal]) AS [Revenue], o.[DiscountCode]
+FROM [sales].[Orders] AS o
+INNER JOIN [sales].[OrderItems] AS i ON i.[OrderId] = o.[OrderId]
+INNER JOIN [cat].[Products] AS p ON p.[ProductId] = i.[ProductId]
+GROUP BY CAST(o.[OrderDate] AS DATE), p.[Name], o.[DiscountCode];
+### write src/Sales/rpt/Views/vw_TopCustomers.sql
+CREATE VIEW [rpt].[vw_TopCustomers]
+AS
+SELECT TOP (100) c.[CustomerId], c.[FullName], SUM(o.[TotalAmount]) AS [Revenue]
+FROM [crm].[Customers] AS c
+INNER JOIN [sales].[Orders] AS o ON o.[CustomerId] = c.[CustomerId]
+GROUP BY c.[CustomerId], c.[FullName]
+ORDER BY SUM(o.[TotalAmount]) DESC;
+### commit 2024-09-03 aw Sales reports (rpt schema)
+### write src/DWH/DWH.sqlproj
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <Name>DWH</Name>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectVersion>4.1</ProjectVersion>
+    <ProjectGuid>{3D8C3E4A-2B5F-4E77-9B83-8F5E3C4D6A03}</ProjectGuid>
+    <DSP>Microsoft.Data.Tools.Schema.Sql.Sql150DatabaseSchemaProvider</DSP>
+    <OutputType>Database</OutputType>
+    <RootNamespace>DWH</RootNamespace>
+    <AssemblyName>DWH</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+  </PropertyGroup>
+  <Import Condition="'$(SQLDBExtensionsRefPath)' != ''" Project="$(SQLDBExtensionsRefPath)\Microsoft.Data.Tools.Schema.SqlTasks.targets" />
+  <ItemGroup>
+    <Folder Include="Security\" />
+    <Folder Include="arch\Stored Procedures\" />
+    <Folder Include="arch\Views\" />
+    <Folder Include="dbo\Synonyms\" />
+    <Folder Include="dim\Stored Procedures\" />
+    <Folder Include="dim\Tables\" />
+    <Folder Include="etl\Stored Procedures\" />
+    <Folder Include="etl\Tables\" />
+    <Folder Include="fact\Stored Procedures\" />
+    <Folder Include="fact\Tables\" />
+    <Folder Include="mart\Views\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Build Include="Security\arch.sql" />
+    <Build Include="Security\dim.sql" />
+    <Build Include="Security\etl.sql" />
+    <Build Include="Security\fact.sql" />
+    <Build Include="Security\mart.sql" />
+    <Build Include="arch\Stored Procedures\usp_ArchiveOrders.sql" />
+    <Build Include="arch\Views\vw_OrdersHistory.sql" />
+    <Build Include="dbo\Synonyms\syn_StgOrders.sql" />
+    <Build Include="dim\Stored Procedures\usp_LoadDimCustomer.sql" />
+    <Build Include="dim\Tables\DimCustomer.sql" />
+    <Build Include="dim\Tables\DimDate.sql" />
+    <Build Include="dim\Tables\DimProduct.sql" />
+    <Build Include="etl\Stored Procedures\usp_RunNightly.sql" />
+    <Build Include="etl\Tables\EtlLog.sql" />
+    <Build Include="fact\Stored Procedures\usp_LoadFactSales.sql" />
+    <Build Include="fact\Tables\FactReturns.sql" />
+    <Build Include="fact\Tables\FactSales.sql" />
+    <Build Include="mart\Views\vw_MarginByCategory.sql" />
+    <Build Include="mart\Views\vw_SalesByMonth.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <SqlCmdVariable Include="Staging">
+      <DefaultValue>Staging</DefaultValue>
+      <Value>$(SqlCmdVar__1)</Value>
+    </SqlCmdVariable>
+    <SqlCmdVariable Include="Archive">
+      <DefaultValue>SalesArchive</DefaultValue>
+      <Value>$(SqlCmdVar__2)</Value>
+    </SqlCmdVariable>
+    <SqlCmdVariable Include="ErpDb">
+      <DefaultValue></DefaultValue>
+      <Value>$(SqlCmdVar__3)</Value>
+    </SqlCmdVariable>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Staging\Staging.sqlproj">
+      <Name>Staging</Name>
+      <Project>{2C7B2D3F-1A4E-4D66-8A72-7E4D2B3C5F02}</Project>
+      <Private>True</Private>
+      <SuppressMissingDependenciesErrors>False</SuppressMissingDependenciesErrors>
+      <DatabaseSqlCmdVariable>Staging</DatabaseSqlCmdVariable>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <PostDeploy Include="Scripts\Script.PostDeployment.sql" />
+  </ItemGroup>
+</Project>
+
+### write src/DWH/fact/Tables/FactReturns.sql
+CREATE TABLE [fact].[FactReturns]
+(
+    [OrderId] INT             NOT NULL,
+    [Amount]  DECIMAL (18, 2) NOT NULL
+);
+### write src/DWH/mart/Views/vw_MarginByCategory.sql
+CREATE VIEW [mart].[vw_MarginByCategory]
+AS
+SELECT p.[Category], SUM(f.[Revenue]) AS [Revenue]
+FROM [fact].[FactSales] AS f
+INNER JOIN [dim].[DimProduct] AS p ON p.[ProductKey] = f.[ProductKey]
+GROUP BY p.[Category];
+### commit 2024-11-18 pk DWH: returns fact and margin view
+### remove src/Sales/dbo/Tables/KpiCache.sql
+### commit 2025-03-07 jn Remove KpiCache table
+### write src/Sales/Security/pay.sql
+CREATE SCHEMA [pay] AUTHORIZATION [dbo];
+### write src/Sales/pay/Stored Procedures/usp_CapturePayment.sql
+CREATE PROCEDURE [pay].[usp_CapturePayment]
+    @OrderId INT,
+    @Amount DECIMAL (18, 2),
+    @Provider VARCHAR (30)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    INSERT INTO [pay].[Transactions] ([OrderId], [Amount], [CurrencyCode], [Provider], [Status])
+    VALUES (@OrderId, @Amount, 'PLN', @Provider, 'CAPTURED');
+    UPDATE [sales].[Orders] SET [StatusId] = 2 WHERE [OrderId] = @OrderId;
+END
+### write src/Sales/pay/Tables/Refunds.sql
+CREATE TABLE [pay].[Refunds]
+(
+    [RefundId]      BIGINT          IDENTITY (1, 1) NOT NULL,
+    [TransactionId] BIGINT          NOT NULL,
+    [Amount]        DECIMAL (18, 2) NOT NULL,
+    [Reason]        NVARCHAR (200)  NULL,
+    CONSTRAINT [PK_Refunds] PRIMARY KEY CLUSTERED ([RefundId] ASC),
+    CONSTRAINT [FK_Refunds_Transactions] FOREIGN KEY ([TransactionId]) REFERENCES [pay].[Transactions] ([TransactionId])
+);
+### write src/Sales/pay/Tables/Transactions.sql
+CREATE TABLE [pay].[Transactions]
+(
+    [TransactionId] BIGINT          IDENTITY (1, 1) NOT NULL,
+    [OrderId]       INT             NOT NULL,
+    [Amount]        DECIMAL (18, 2) NOT NULL,
+    [CurrencyCode]  CHAR (3)        NOT NULL,
+    [Provider]      VARCHAR (30)    NOT NULL,
+    [Status]        VARCHAR (20)    NOT NULL,
+    CONSTRAINT [PK_Transactions] PRIMARY KEY CLUSTERED ([TransactionId] ASC),
+    CONSTRAINT [FK_Transactions_Orders] FOREIGN KEY ([OrderId]) REFERENCES [sales].[Orders] ([OrderId])
+);
+### commit 2025-11-20 kl Payments module
+### write src/Sales/sales/Tables/Orders.sql
+CREATE TABLE [sales].[Orders]
+(
+    [OrderId]      INT             IDENTITY (1, 1) NOT NULL,
+    [CustomerId]   INT             NOT NULL,
+    [OrderDate]    DATETIME2 (0)   NOT NULL,
+    [StatusId]     TINYINT         NOT NULL,
+    [TotalAmount]  DECIMAL (18, 2) NOT NULL,
+    [DiscountCode] VARCHAR (20)    NULL,
+    [CurrencyCode] CHAR (3)        CONSTRAINT [DF_Orders_CurrencyCode] DEFAULT ('PLN') NOT NULL,
+    [CreatedBy]    NVARCHAR (128)  CONSTRAINT [DF_Orders_CreatedBy] DEFAULT (suser_sname()) NOT NULL,
+    CONSTRAINT [PK_Orders] PRIMARY KEY CLUSTERED ([OrderId] ASC),
+    CONSTRAINT [FK_Orders_Customers] FOREIGN KEY ([CustomerId]) REFERENCES [crm].[Customers] ([CustomerId]),
+    CONSTRAINT [FK_Orders_OrderStatus] FOREIGN KEY ([StatusId]) REFERENCES [sales].[OrderStatus] ([StatusId])
+);
+GO
+CREATE NONCLUSTERED INDEX [IX_Orders_CustomerId_OrderDate]
+    ON [sales].[Orders]([CustomerId] ASC, [OrderDate] ASC);
+### commit 2026-07-02 aw Orders: add CurrencyCode
+### write src/Sales/cat/Views/vw_Catalog.sql
+CREATE VIEW [cat].[vw_Catalog]
+AS
+SELECT p.[ProductId], p.[Sku], p.[Name], c.[Name] AS [Category], pr.[Price], pr.[CurrencyCode]
+FROM [cat].[Products] AS p
+INNER JOIN [cat].[Categories] AS c ON c.[CategoryId] = p.[CategoryId]
+OUTER APPLY (SELECT TOP (1) x.[Price], x.[CurrencyCode] FROM [cat].[Prices] AS x WHERE x.[ProductId] = p.[ProductId] ORDER BY x.[ValidFrom] DESC) AS pr
+WHERE p.[IsActive] = 1 AND c.[Name] IS NOT NULL;
+### commit 2026-09-10 pk Catalog view: skip products without category
+### tag v2.3
+### phase B
+### remove src/Sales/inv/Stored Procedures/usp_RecalcStock_old.sql
+### commit 2026-09-19 pk Cleanup old stock procs
+### write src/Sales/sales/Stored Procedures/usp_SearchOrders.sql
+CREATE PROCEDURE [sales].[usp_SearchOrders]
+    @Source SYSNAME,
+    @From DATE,
+    @To DATE
+AS
+BEGIN
+    SET NOCOUNT ON;
+    DECLARE @sql NVARCHAR (MAX) = N'SELECT o.OrderId, o.OrderDate FROM sales.' + QUOTENAME(@Source) + N' AS o WHERE o.OrderDate BETWEEN @From AND @To';
+    EXEC sp_executesql @sql, N'@From date, @To date', @From, @To;
+END
+### commit 2026-09-22 aw Order search for backoffice
+### write src/Sales/Sales.refactorlog
+<?xml version="1.0" encoding="utf-8"?>
+<Operations Version="1.0" xmlns="http://schemas.microsoft.com/sqlserver/dac/Serialization/2012/02">
+  <Operation Name="Rename Refactor" Key="9b1f3c2a-6e1d-4a59-b2c4-1a2b3c4d5e6f" ChangeDateTime="09/25/2026 10:00:00">
+    <Property Name="ElementName" Value="[pay].[Transactions]" />
+    <Property Name="ElementType" Value="SqlTable" />
+    <Property Name="ParentElementName" Value="[pay]" />
+    <Property Name="ParentElementType" Value="SqlSchema" />
+    <Property Name="NewName" Value="[PaymentTransactions]" />
+  </Operation>
+</Operations>
+### write src/Sales/pay/Stored Procedures/usp_CapturePayment.sql
+CREATE PROCEDURE [pay].[usp_CapturePayment]
+    @OrderId INT,
+    @Amount DECIMAL (18, 2),
+    @Provider VARCHAR (30)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    INSERT INTO [pay].[PaymentTransactions] ([OrderId], [Amount], [CurrencyCode], [Provider], [Status])
+    VALUES (@OrderId, @Amount, 'PLN', @Provider, 'CAPTURED');
+    UPDATE [sales].[Orders] SET [StatusId] = 2 WHERE [OrderId] = @OrderId;
+END
+### write src/Sales/pay/Tables/PaymentTransactions.sql
+CREATE TABLE [pay].[PaymentTransactions]
+(
+    [TransactionId] BIGINT          IDENTITY (1, 1) NOT NULL,
+    [OrderId]       INT             NOT NULL,
+    [Amount]        DECIMAL (18, 2) NOT NULL,
+    [CurrencyCode]  CHAR (3)        NOT NULL,
+    [Provider]      VARCHAR (30)    NOT NULL,
+    [Status]        VARCHAR (20)    NOT NULL,
+    CONSTRAINT [PK_PaymentTransactions] PRIMARY KEY CLUSTERED ([TransactionId] ASC),
+    CONSTRAINT [FK_PaymentTransactions_Orders] FOREIGN KEY ([OrderId]) REFERENCES [sales].[Orders] ([OrderId])
+);
+### write src/Sales/pay/Tables/Refunds.sql
+CREATE TABLE [pay].[Refunds]
+(
+    [RefundId]      BIGINT          IDENTITY (1, 1) NOT NULL,
+    [TransactionId] BIGINT          NOT NULL,
+    [Amount]        DECIMAL (18, 2) NOT NULL,
+    [Reason]        NVARCHAR (200)  NULL,
+    CONSTRAINT [PK_Refunds] PRIMARY KEY CLUSTERED ([RefundId] ASC),
+    CONSTRAINT [FK_Refunds_Transactions] FOREIGN KEY ([TransactionId]) REFERENCES [pay].[PaymentTransactions] ([TransactionId])
+);
+### remove src/Sales/pay/Tables/Transactions.sql
+### commit 2026-09-25 kl Rename Transactions to PaymentTransactions
+### write src/Sales/pay/Stored Procedures/usp_Refund.sql
+CREATE PROCEDURE [pay].[usp_Refund]
+    @OrderId INT,
+    @Reason NVARCHAR (200)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    INSERT INTO [pay].[Refunds] ([TransactionId], [Amount], [Reason])
+    SELECT t.[TransactionId], t.[Amount], @Reason FROM [pay].[PaymentTransactions] AS t WHERE t.[OrderId] = @OrderId;
+END
+### write src/Sales/sales/Stored Procedures/usp_CancelOrder.sql
+CREATE PROCEDURE [sales].[usp_CancelOrder]
+    @OrderId INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    UPDATE [sales].[Orders] SET [StatusId] = 9 WHERE [OrderId] = @OrderId;
+    EXEC [pay].[usp_Refund] @OrderId = @OrderId, @Reason = N'Anulowanie';
+    DELETE FROM [inv].[Reservations] WHERE [OrderId] = @OrderId;
+END
+### commit 2026-09-26 kl Refunds on cancel
+### write src/Sales/sales/Tables/Orders.sql
+CREATE TABLE [sales].[Orders]
+(
+    [OrderId]      INT             IDENTITY (1, 1) NOT NULL,
+    [CustomerId]   INT             NOT NULL,
+    [OrderDate]    DATETIME2 (0)   NOT NULL,
+    [StatusId]     TINYINT         NOT NULL,
+    [TotalAmount]  DECIMAL (18, 2) NOT NULL,
+    [CurrencyCode] CHAR (3)        CONSTRAINT [DF_Orders_CurrencyCode] DEFAULT ('PLN') NOT NULL,
+    [CreatedBy]    NVARCHAR (128)  CONSTRAINT [DF_Orders_CreatedBy] DEFAULT (suser_sname()) NOT NULL,
+    CONSTRAINT [PK_Orders] PRIMARY KEY CLUSTERED ([OrderId] ASC),
+    CONSTRAINT [FK_Orders_Customers] FOREIGN KEY ([CustomerId]) REFERENCES [crm].[Customers] ([CustomerId]),
+    CONSTRAINT [FK_Orders_OrderStatus] FOREIGN KEY ([StatusId]) REFERENCES [sales].[OrderStatus] ([StatusId])
+);
+GO
+CREATE NONCLUSTERED INDEX [IX_Orders_CustomerId_OrderDate]
+    ON [sales].[Orders]([CustomerId] ASC, [OrderDate] ASC);
+### commit 2026-09-28 jn Remove legacy discounts
+### write src/Sales/sales/Stored Procedures/usp_CreateOrder.sql
+CREATE PROCEDURE [sales].[usp_CreateOrder]
+    @CustomerId INT,
+    @Items [sales].[OrderItemList] READONLY,
+    @CurrencyCode CHAR (3) = 'PLN',
+    @OrderId INT OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    BEGIN TRANSACTION;
+    INSERT INTO [sales].[Orders] ([CustomerId], [OrderDate], [StatusId], [TotalAmount], [CurrencyCode])
+    VALUES (@CustomerId, SYSUTCDATETIME(), 1, 0, @CurrencyCode);
+    SET @OrderId = SCOPE_IDENTITY();
+    INSERT INTO [sales].[OrderItems] ([OrderId], [LineNo], [ProductId], [Quantity], [UnitPrice])
+    SELECT @OrderId, ROW_NUMBER() OVER (ORDER BY i.[ProductId]), i.[ProductId], i.[Quantity], p.[Price]
+    FROM @Items AS i
+    CROSS APPLY (SELECT TOP (1) x.[Price] FROM [cat].[Prices] AS x WHERE x.[ProductId] = i.[ProductId] ORDER BY x.[ValidFrom] DESC) AS p;
+    UPDATE o SET o.[TotalAmount] = [sales].[fn_OrderTotal](@OrderId)
+    FROM [sales].[Orders] AS o WHERE o.[OrderId] = @OrderId;
+    COMMIT TRANSACTION;
+END
+### commit 2026-09-30 aw Multi-currency orders
+### write src/Sales/inv/Tables/StockLevels.sql
+CREATE TABLE [inv].[StockLevels]
+(
+    [ProductId]   INT NOT NULL,
+    [WarehouseId] INT NOT NULL,
+    [Qty]         INT NOT NULL,
+    CONSTRAINT [PK_StockLevels] PRIMARY KEY CLUSTERED ([ProductId] ASC, [WarehouseId] ASC),
+    CONSTRAINT [FK_StockLevels_Products] FOREIGN KEY ([ProductId]) REFERENCES [cat].[Products] ([ProductId]),
+    CONSTRAINT [FK_StockLevels_Warehouses] FOREIGN KEY ([WarehouseId]) REFERENCES [inv].[Warehouses] ([WarehouseId])
+);
+GO
+CREATE NONCLUSTERED INDEX [IX_StockLevels_ProductId_Warehouse]
+    ON [inv].[StockLevels]([ProductId] ASC, [WarehouseId] ASC) INCLUDE([Qty]);
+### commit 2026-10-02 pk Index for stock lookups

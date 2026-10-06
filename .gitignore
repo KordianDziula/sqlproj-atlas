@@ -1,0 +1,17 @@
+# Python
+**/.venv/
+**/__pycache__/
+**/.pytest_cache/
+**/.ruff_cache/
+**/.hypothesis/
+.coverage*
+htmlcov/
+
+# silnik C#: w repozytorium tylko kod; kompiluje go /data-architect:setup na komputerze użytkownika
+data-architect/engine/bin/
+data-architect/engine/obj/
+data-architect/engine/dist/
+
+# lokalne ustawienia i dane Claude Code
+.claude/
+*.log

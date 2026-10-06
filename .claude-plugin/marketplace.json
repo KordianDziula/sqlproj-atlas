@@ -1,0 +1,12 @@
+{
+  "name": "data-architect-marketplace",
+  "owner": { "name": "Kordian Dziuła", "email": "kordian.dziula@wp.pl" },
+  "metadata": { "description": "Marketplace z wtyczką Data Architect (analiza projektów SSDT)" },
+  "plugins": [
+    {
+      "name": "data-architect",
+      "source": "./data-architect",
+      "description": "Analiza projektów SSDT (SQL Server): DacFx + ScriptDom, mapa architektury, zmiany „było → jest” od ostatniej analizy."
+    }
+  ]
+}

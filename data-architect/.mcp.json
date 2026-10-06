@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "atlas": {
+      "command": "${CLAUDE_PLUGIN_ROOT}/bin/atlas",
+      "env": {
+        "ATLAS_PROJECT_DIR": "${CLAUDE_PROJECT_DIR}"
+      }
+    }
+  }
+}
