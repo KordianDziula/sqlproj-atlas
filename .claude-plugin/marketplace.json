@@ -5,7 +5,7 @@
   "plugins": [
     {
       "name": "ssdt-atlas",
-      "source": "./data-architect",
+      "source": "./ssdt-atlas",
       "description": "Analiza projektów SSDT (SQL Server): DacFx + ScriptDom, mapa architektury, zmiany „było → jest” od ostatniej analizy."
     }
   ]

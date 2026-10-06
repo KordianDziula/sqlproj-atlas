@@ -1,0 +1,49 @@
+#!/bin/sh
+# SSDT Atlas: uruchamia wtyczkę przez uv (macOS / Linux; na Windows bin/atlas.cmd).
+#
+# Wspólne środowisko (~/.ssdt-atlas/venv) zawiera tylko zewnętrzne biblioteki z uv.lock (uv dobiera też Pythona).
+# Kod wtyczki ładujemy wprost z jej katalogu (PYTHONPATH=<wtyczka>/src), więc kilka sesji i wersji wtyczki
+# może działać równocześnie bez przeinstalowywania pakietu.
+#
+#   bin/atlas install   przygotowuje środowisko (pobiera Pythona, jeśli trzeba, i biblioteki); woła je /ssdt-atlas:setup
+#   bin/atlas [...]     uruchamia wtyczkę (bez argumentów: serwer MCP)
+
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+export ATLAS_PLUGIN_ROOT="$ROOT"
+export PYTHONPATH="$ROOT/src${PYTHONPATH:+:$PYTHONPATH}"
+export UV_PROJECT_ENVIRONMENT="${ATLAS_VENV:-$HOME/.ssdt-atlas/venv}"
+
+# --- uv: z PATH albo z typowych miejsc instalacji (PATH sesji mógł nie zostać odświeżony po instalacji) ---
+UV="${ATLAS_UV:-$(command -v uv)}"
+for candidate in "$HOME/.local/bin/uv" "$HOME/.cargo/bin/uv"; do
+  if [ -z "$UV" ] && [ -x "$candidate" ]; then
+    UV="$candidate"
+  fi
+done
+
+if [ -z "$UV" ]; then
+  echo "SSDT Atlas: brak uv (menedżer Pythona dla wtyczki). Zaproponuj użytkownikowi /ssdt-atlas:setup."
+  [ "$1" = "check" ] && exit 0
+  exit 1
+fi
+
+# uv z opcjami wspólnymi: zablokowane wersje z uv.lock, bez narzędzi deweloperskich, bez usuwania pakietów,
+# których nie zna ta wersja wtyczki (mogą ich używać inne sesje)
+uv_project() {
+  command="$1"
+  shift
+  exec "$UV" "$command" --project "$ROOT" --frozen --no-dev --inexact "$@"
+}
+
+# --- przygotowanie środowiska ---
+if [ "$1" = "install" ]; then
+  uv_project sync
+fi
+
+if [ ! -d "$UV_PROJECT_ENVIRONMENT" ]; then
+  echo "SSDT Atlas: środowisko wtyczki nie jest przygotowane. Zaproponuj użytkownikowi /ssdt-atlas:setup."
+  [ "$1" = "check" ] && exit 0
+  exit 1
+fi
+
+uv_project run --quiet python -m ssdt_atlas "$@"

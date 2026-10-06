@@ -1,0 +1,9 @@
+{
+  "name": "ssdt-atlas",
+  "displayName": "SSDT Atlas",
+  "version": "1.5.0",
+  "description": "Analiza projektów bazodanowych SSDT (SQL Server): silnik Microsoft DacFx + ScriptDom, mapa architektury w lokalnej aplikacji webowej, zmiany „było → jest” od ostatniej analizy.",
+  "author": { "name": "Kordian Dziuła", "email": "kordian.dziula@wp.pl" },
+  "license": "MIT",
+  "keywords": ["ssdt", "sql-server", "dacfx", "database", "architecture", "sqlproj"]
+}

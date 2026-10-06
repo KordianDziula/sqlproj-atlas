@@ -16,7 +16,7 @@ Wtyczka Claude Code **SSDT Atlas** do analizy projektów bazodanowych **SSDT (SQ
 - Windows albo macOS (działa też na Linuksie)
 
 Repozytorium zawiera tylko kod źródłowy. Silnik analizy (C#) buduje się na Twoim komputerze przy
-`/ssdt-atlas:setup` do `~/.data-architect/engine/` (pakiety Microsoftu pobierane z NuGet, 1–3 minuty za pierwszym razem).
+`/ssdt-atlas:setup` do `~/.ssdt-atlas/engine/` (pakiety Microsoftu pobierane z NuGet, 1–3 minuty za pierwszym razem).
 
 ## Instalacja
 
@@ -48,9 +48,15 @@ claude plugin update ssdt-atlas@claude-ssdt-atlas
 | `/ssdt-atlas:init` | pierwsza analiza: krótki wywiad, analiza silnikiem, domeny i opisy, otwarcie mapy |
 | `/ssdt-atlas:refresh` | ponowna analiza i porównanie z poprzednią: co się zmieniło, wpływ i ryzyko |
 | `/ssdt-atlas:open [widok]` | otwiera aplikację: `map`, `changes`, `issues`, `guides` |
+| `/ssdt-atlas:close` | zamyka aplikację (serwer w tle); i tak kończy się razem z sesją Claude Code |
 | pytania w czacie | np. „co korzysta z tabeli sales.Orders?”, „co się zepsuje, jeśli usunę kolumnę X?” |
 
-Dane wtyczki trafiają do `<projekt>/.claude/data-architect/` (katalog powstaje przy pierwszej analizie).
+Przy pierwszej analizie Claude zawsze pyta, które bazy i schematy pominąć. Ustawienie trafia do `config.json`
+(`excludeProjects`, `excludeSchemas`: `schemat` we wszystkich bazach albo `Baza.schemat` w jednej), a na mapie
+pominięte bazy i schematy są widoczne jako szare kafelki.
+
+Dane wtyczki trafiają do `<projekt>/.claude/ssdt-atlas/` (katalog powstaje przy pierwszej analizie; dane z
+wcześniejszego `.claude/data-architect` są przenoszone automatycznie).
 `guidelines.md`, `overrides.json` i `config.json` warto trzymać w repozytorium projektu. Baza i pliki robocze
 są wykluczone przez `.gitignore`.
 
@@ -60,4 +66,4 @@ są wykluczone przez `.gitignore`.
 - **„Silnik analizy nie jest jeszcze zbudowany”** (np. po aktualizacji wtyczki): `/ssdt-atlas:setup`.
 - **macOS, „Permission denied” dla `bin/atlas`:** `chmod +x <katalog-wtyczki>/bin/atlas`.
 - **Diagnostyka:** `<katalog-wtyczki>/bin/atlas doctor`.
-- **Log:** `.claude/data-architect/atlas.log` w katalogu projektu.
+- **Log:** `.claude/ssdt-atlas/atlas.log` w katalogu projektu.

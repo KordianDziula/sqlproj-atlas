@@ -8,9 +8,9 @@
 htmlcov/
 
 # silnik C#: w repozytorium tylko kod; kompiluje go /ssdt-atlas:setup na komputerze użytkownika
-data-architect/engine/bin/
-data-architect/engine/obj/
-data-architect/engine/dist/
+ssdt-atlas/engine/bin/
+ssdt-atlas/engine/obj/
+ssdt-atlas/engine/dist/
 
 # lokalne ustawienia i dane Claude Code
 .claude/
