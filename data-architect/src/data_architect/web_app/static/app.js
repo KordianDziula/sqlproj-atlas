@@ -1,4 +1,4 @@
-/* Data Architect: aplikacja webowa (bez zależności). Dane z lokalnego API serwera wtyczki. */
+/* SSDT Atlas: aplikacja webowa (bez zależności). Dane z lokalnego API serwera wtyczki. */
 'use strict';
 
 /* ================= Narzędzia ================= */
@@ -95,7 +95,7 @@ function renderNav() {
   const s = ST?.snapshot;
   $('#lastBox').innerHTML = s ? `<span>Ostatnia analiza: <b>${fmtDate(s.createdAt)}</b></span>
     <span>Nowe commity: ${ST.newCommits ? `<span class="new">${ST.newCommits}</span>` : '<b>0</b>'}</span>
-    ${ST.newCommits ? '<span class="muted small">Odświeżenie: <span class="mono-inline">/data-architect:refresh</span> w Claude Code</span>' : ''}` : '<span>Brak analizy</span>';
+    ${ST.newCommits ? '<span class="muted small">Odświeżenie: <span class="mono-inline">/ssdt-atlas:refresh</span> w Claude Code</span>' : ''}` : '<span>Brak analizy</span>';
 }
 
 function titlebar() {
@@ -127,7 +127,7 @@ async function poll() {
     if (poll.failed) { poll.failed = 0; toast('Połączenie z serwerem przywrócone.'); }
   } catch (e) {
     poll.failed = (poll.failed || 0) + 1;
-    if (poll.failed === 2) toast('Brak połączenia z serwerem Data Architect. Czy sesja Claude Code została zamknięta?');
+    if (poll.failed === 2) toast('Brak połączenia z serwerem SSDT Atlas. Czy sesja Claude Code została zamknięta?');
   }
 }
 
@@ -168,7 +168,7 @@ async function render() {
 
 function emptyState() {
   return `<div class="empty-state"><h2>Projekt nie został jeszcze przeanalizowany</h2>
-    <p>W Claude Code, w katalogu tego projektu, uruchom <code>/data-architect:init</code>. Claude zada kilka pytań o projekt, a silnik Microsoft DacFx przeanalizuje wszystkie bazy.</p>
+    <p>W Claude Code, w katalogu tego projektu, uruchom <code>/ssdt-atlas:init</code>. Claude zada kilka pytań o projekt, a silnik Microsoft DacFx przeanalizuje wszystkie bazy.</p>
     <p class="muted small">Katalog: <span class="mono-inline">${esc(ST?.projectDir || '')}</span></p></div>`;
 }
 
@@ -568,13 +568,13 @@ function changeDetail(c) {
 }
 async function changesView() {
   const cs = CACHE.changes || (CACHE.changes = await api('changes'));
-  if (!cs) return `<div class="empty-state"><h2>Brak zmian do pokazania</h2><p>Zmiany pojawią się po odświeżeniu analizy: w Claude Code uruchom <code>/data-architect:refresh</code>.</p></div>`;
+  if (!cs) return `<div class="empty-state"><h2>Brak zmian do pokazania</h2><p>Zmiany pojawią się po odświeżeniu analizy: w Claude Code uruchom <code>/ssdt-atlas:refresh</code>.</p></div>`;
   const commits = cs.stats.commitList || [];
   const total = cs.changes.length;
   if (S.openChange === null && total) S.openChange = cs.changes[0].objectId;  // najważniejsza zmiana rozwinięta
   return `<div class="page" style="max-width:980px">
     <div class="lead"><p class="muted">Od analizy z ${fmtDate(cs.from?.createdAt)} do ${fmtDate(cs.to?.createdAt)}: ${objs(total)} ${plural(total, 'zmieniony', 'zmienione', 'zmienionych')}, ${commits.length} ${plural(commits.length, 'commit', 'commity', 'commitów')} w repozytorium.</p>
-      ${cs.summary ? `<p>${esc(cs.summary)}</p>` : total ? '<p class="muted">Claude nie opisał jeszcze tych zmian. W Claude Code uruchom <span class="mono-inline">/data-architect:refresh</span>.</p>' : '<p>Od poprzedniej analizy żaden obiekt się nie zmienił.</p>'}</div>
+      ${cs.summary ? `<p>${esc(cs.summary)}</p>` : total ? '<p class="muted">Claude nie opisał jeszcze tych zmian. W Claude Code uruchom <span class="mono-inline">/ssdt-atlas:refresh</span>.</p>' : '<p>Od poprzedniej analizy żaden obiekt się nie zmienił.</p>'}</div>
     ${total ? `<div class="box">${cs.changes.map(c => {
       const open = S.openChange === c.objectId;
       return `<div class="fold${open ? ' open' : ''}"><button class="fold-h" data-change="${esc(c.objectId)}" aria-expanded="${open}">
@@ -645,7 +645,7 @@ function parseGuides(md) {
   }
   return secs.map(s => ({ title: s.title, body: s.body.join('\n').trim() }));
 }
-function buildGuides(secs) { return '# Wskazówki dla Data Architect\n\n' + secs.map(s => `## ${s.title}\n\n${s.body}\n`).join('\n'); }
+function buildGuides(secs) { return '# Wskazówki dla SSDT Atlas\n\n' + secs.map(s => `## ${s.title}\n\n${s.body}\n`).join('\n'); }
 async function guidesView() {
   const g = CACHE.guides || (CACHE.guides = await api('guidelines'));
   const secs = parseGuides(g.markdown);
@@ -653,7 +653,7 @@ async function guidesView() {
     <div class="lead"><p class="muted">Claude korzysta z tych wskazówek przy każdej analizie. Plik: <span class="mono-inline">.claude/data-architect/guidelines.md</span>.</p></div>
     ${secs.length ? `<div class="box">${secs.map((s, i) => { const k = 'g' + i, ed = S.editing === k; return `<div class="guide"><div class="sec-h">${esc(s.title)}<span class="r">${ed ? '' : `<button class="link" data-edit="${k}">Edytuj</button>`}</span></div>
       ${ed ? `<textarea class="input" id="edit-${k}">${esc(s.body)}</textarea><div class="row"><button class="btn primary small" data-save="${k}">Zapisz</button><button class="btn small" data-cancel>Anuluj</button></div>` : `<p style="white-space:pre-wrap">${esc(s.body)}</p>`}</div>`; }).join('')}</div>`
-      : '<p class="muted">Brak wskazówek. Powstaną podczas <span class="mono-inline">/data-architect:init</span>.</p>'}
+      : '<p class="muted">Brak wskazówek. Powstaną podczas <span class="mono-inline">/ssdt-atlas:init</span>.</p>'}
     ${S.editing === 'gnew' ? `<div class="box"><div class="box-b"><input class="input" id="edit-gnew-title" placeholder="Tytuł"><textarea class="input" id="edit-gnew" placeholder="Treść wskazówki"></textarea><div class="row"><button class="btn primary small" data-save="gnew">Dodaj</button><button class="btn small" data-cancel>Anuluj</button></div></div></div>` : '<button class="btn small" style="align-self:flex-start" data-edit="gnew">Dodaj wskazówkę</button>'}
   </div>`;
 }

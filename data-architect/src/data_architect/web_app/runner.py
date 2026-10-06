@@ -81,7 +81,7 @@ def open_browser(url: str) -> None:
 def serve_forever(ws: Workspace, open_in_browser: bool = True) -> None:
     """Tryb samodzielny (`bin/atlas ui`): uruchamia aplikację i czeka do Ctrl+C."""
     url = ensure_ui(ws)
-    print(f"Data Architect UI: {url}  (Ctrl+C aby zakończyć)", flush=True)
+    print(f"SSDT Atlas UI: {url}  (Ctrl+C aby zakończyć)", flush=True)
     if open_in_browser:
         open_browser(url)
 

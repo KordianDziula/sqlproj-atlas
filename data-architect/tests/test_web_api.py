@@ -53,7 +53,7 @@ def test_write_requires_header(api, path):
 def test_static_files(api):
     index = api.get("/")
     assert index.status_code == 200
-    assert "Data Architect" in index.text
+    assert "SSDT Atlas" in index.text
     assert api.get("/app.js").headers["content-type"].startswith("text/javascript")
     assert api.get("/app.css").headers["content-type"].startswith("text/css")
     assert api.get("/nie-ma.js").status_code == 404

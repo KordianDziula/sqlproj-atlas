@@ -6,7 +6,7 @@ Przepływ:
     3. czytamy wynik do modeli Pydantic (EngineResult).
 
 Kod silnika: katalog engine/ (Program.cs, ProjectAnalyzer.cs, ScriptAnalyzer.cs). Wtyczka nie zawiera skompilowanych
-plików: /data-architect:setup buduje silnik na komputerze użytkownika (`bin/atlas build-engine`, wymaga .NET SDK 8+)
+plików: /ssdt-atlas:setup buduje silnik na komputerze użytkownika (`bin/atlas build-engine`, wymaga .NET SDK 8+)
 do ~/.data-architect/engine/<skrót kodu>. Nowa wersja kodu silnika trafia do nowego katalogu, więc starsze wersje
 wtyczki w innych sesjach dalej działają.
 """
@@ -41,7 +41,7 @@ _DOTNET_ENV = {"DOTNET_CLI_TELEMETRY_OPTOUT": "1", "DOTNET_NOLOGO": "1", "DOTNET
 
 NO_SDK = (
     "Nie znaleziono .NET SDK 8 lub nowszego, potrzebnego do zbudowania silnika analizy. "
-    "Zainstaluj przez /data-architect:setup albo z https://dotnet.microsoft.com/download"
+    "Zainstaluj przez /ssdt-atlas:setup albo z https://dotnet.microsoft.com/download"
 )
 
 
@@ -133,7 +133,7 @@ def dotnet_candidates() -> list[Path]:
 
     Nie polegamy tylko na PATH i zmiennych środowiskowych: Claude Code uruchamia serwery MCP z okrojonym
     środowiskiem (np. bez LOCALAPPDATA), więc ścieżki wyznaczamy też z katalogu domowego.
-    /data-architect:setup instaluje .NET do ~/.dotnet.
+    /ssdt-atlas:setup instaluje .NET do ~/.dotnet.
     """
     windows = sys.platform == "win32"
     exe = "dotnet.exe" if windows else "dotnet"
@@ -309,13 +309,13 @@ def engine_status() -> dict:
         checked = "; ".join(str(c) for c in dotnet_candidates())
         status["error"] = (
             "Nie znaleziono .NET (wymagany .NET SDK 8 lub nowszy do zbudowania silnika). Zainstaluj przez "
-            f"/data-architect:setup albo z https://dotnet.microsoft.com/download. Sprawdzone: {checked} oraz PATH"
+            f"/ssdt-atlas:setup albo z https://dotnet.microsoft.com/download. Sprawdzone: {checked} oraz PATH"
         )
         return status
 
     if not dll.exists():
         status["error"] = (
-            "Silnik analizy nie jest jeszcze zbudowany na tym komputerze. Uruchom /data-architect:setup "
+            "Silnik analizy nie jest jeszcze zbudowany na tym komputerze. Uruchom /ssdt-atlas:setup "
             "(zbuduje go z kodu wtyczki poleceniem bin/atlas build-engine; wymaga .NET SDK 8+)."
         )
         return status

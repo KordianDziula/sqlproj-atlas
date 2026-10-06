@@ -111,7 +111,7 @@ def test_serve_forever_runs_until_ctrl_c(workspace, monkeypatch, capsys):
     runner.ensure_ui(workspace)  # serwer startuje przed podmianą sleep (czeka na start w pętli z sleep)
     monkeypatch.setattr(runner.time, "sleep", interrupt)
     runner.serve_forever(workspace, open_in_browser=False)
-    assert "Data Architect UI: http://127.0.0.1:" in capsys.readouterr().out
+    assert "SSDT Atlas UI: http://127.0.0.1:" in capsys.readouterr().out
 
 
 def test_server_start_timeout(workspace, monkeypatch):

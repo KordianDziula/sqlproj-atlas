@@ -1,7 +1,7 @@
 """Pliki wtyczki w repozytorium projektu (katalog .claude/data-architect).
 
     overrides.json   poprawki użytkownika z UI (mają pierwszeństwo przed Claude'em i silnikiem)
-    guidelines.md    wskazówki interpretacji projektu z wywiadu przy /data-architect:init
+    guidelines.md    wskazówki interpretacji projektu z wywiadu przy /ssdt-atlas:init
     config.json      ustawienia analizy, np. projekty do pominięcia
     .gitignore       wyklucza lokalne pliki (baza, log, katalog roboczy)
 
@@ -110,7 +110,7 @@ def prepare_data_dir(data_dir: Path) -> None:
     gitignore = data_dir / ".gitignore"
     if not gitignore.exists():
         gitignore.write_text(
-            "# Lokalne dane Data Architect (odtwarzalne)\natlas.db*\nwork/\nui.lock\natlas.log\n", encoding="utf-8"
+            "# Lokalne dane SSDT Atlas (odtwarzalne)\natlas.db*\nwork/\nui.lock\natlas.log\n", encoding="utf-8"
         )
 
 

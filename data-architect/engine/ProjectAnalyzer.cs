@@ -228,7 +228,7 @@ public static class ProjectAnalyzer
                 {
                     var db = ext.Last();
                     var server = ext.Count > 1 ? ext[0] : null;
-                    var kindExt = forcedKind ?? Classify(fromType, null, toKey, scriptMap.GetValueOrDefault(fromKey));
+                    var kindExt = forcedKind ?? Classify(fromType, null, toKey, db, scriptMap.GetValueOrDefault(fromKey));
                     var eKey = $"{fromKey}|{toKey}|{kindExt}|{db}";
                     edgeMap.TryAdd(eKey, new EdgeInfo { From = fromKey, To = toKey, Kind = kindExt, ExternalDb = db, ExternalServer = server });
                     return;
@@ -249,20 +249,22 @@ public static class ProjectAnalyzer
                 }
             }
             if (toKey == null || toKey == fromKey) return;
-            var kind = forcedKind ?? Classify(fromType, targetType, toKey, scriptMap.GetValueOrDefault(fromKey));
+            // obiekt rozwiązany w modelu tego projektu: baza lokalna (nazwa bazy, jeśli była w kodzie, decyduje o zapisie)
+            var kind = forcedKind ?? Classify(fromType, targetType, toKey, ext.Count > 0 ? ext.Last() : null, scriptMap.GetValueOrDefault(fromKey));
             edgeMap.TryAdd($"{fromKey}|{toKey}|{kind}|", new EdgeInfo { From = fromKey, To = toKey, Kind = kind });
         }
     }
 
-    static string Classify(string fromType, string? targetType, string toKey, ScriptObject? so)
+    /// <summary>Rodzaj relacji. `writes` tylko wtedy, gdy kod zapisuje ten sam obiekt: ta sama baza (null = lokalna),
+    /// schemat i nazwa; cel zapisu bez schematu oznacza domyślny schemat (dbo), a nie dowolny.</summary>
+    static string Classify(string fromType, string? targetType, string toKey, string? database, ScriptObject? so)
     {
         if (targetType is "Procedure") return "calls";
         if (targetType is "ScalarFunction" or "TableValuedFunction") return "calls";
         if (fromType == "View") return "reads";
         if (so != null)
         {
-            var bare = toKey.Contains('.') ? toKey[(toKey.IndexOf('.') + 1)..] : toKey;
-            if (so.Writes.Contains(toKey) || so.Writes.Contains(bare)) return "writes";
+            if (so.Writes.Contains(Names.WriteKey(database, toKey))) return "writes";
         }
         return "reads";
     }

@@ -1,11 +1,11 @@
 @echo off
-rem Data Architect: uruchamia wtyczke przez uv (Windows; na macOS / Linux bin/atlas).
+rem SSDT Atlas: uruchamia wtyczke przez uv (Windows; na macOS / Linux bin/atlas).
 rem
 rem Wspolne srodowisko (%USERPROFILE%\.data-architect\venv) zawiera tylko zewnetrzne biblioteki z uv.lock
 rem (uv dobiera tez Pythona). Kod wtyczki ladujemy wprost z jej katalogu (PYTHONPATH=<wtyczka>\src), wiec kilka
 rem sesji i wersji wtyczki moze dzialac rownoczesnie bez przeinstalowywania pakietu (Windows blokuje uzywane pliki).
 rem
-rem   bin\atlas install   przygotowuje srodowisko (pobiera Pythona, jesli trzeba, i biblioteki); wola je /data-architect:setup
+rem   bin\atlas install   przygotowuje srodowisko (pobiera Pythona, jesli trzeba, i biblioteki); wola je /ssdt-atlas:setup
 rem   bin\atlas [...]     uruchamia wtyczke (bez argumentow: serwer MCP)
 
 setlocal
@@ -37,11 +37,11 @@ exit /b %ERRORLEVEL%
 exit /b %ERRORLEVEL%
 
 :no_uv
-echo Data Architect: brak uv (menedzer Pythona dla wtyczki). Zaproponuj uzytkownikowi /data-architect:setup.
+echo SSDT Atlas: brak uv (menedzer Pythona dla wtyczki). Zaproponuj uzytkownikowi /ssdt-atlas:setup.
 if "%~1"=="check" exit /b 0
 exit /b 1
 
 :no_env
-echo Data Architect: srodowisko wtyczki nie jest przygotowane. Zaproponuj uzytkownikowi /data-architect:setup.
+echo SSDT Atlas: srodowisko wtyczki nie jest przygotowane. Zaproponuj uzytkownikowi /ssdt-atlas:setup.
 if "%~1"=="check" exit /b 0
 exit /b 1

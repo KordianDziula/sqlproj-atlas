@@ -1,10 +1,10 @@
 {
-  "name": "data-architect-marketplace",
+  "name": "claude-ssdt-atlas",
   "owner": { "name": "Kordian Dziuła", "email": "kordian.dziula@wp.pl" },
-  "metadata": { "description": "Marketplace z wtyczką Data Architect (analiza projektów SSDT)" },
+  "metadata": { "description": "Marketplace z wtyczką SSDT Atlas (analiza projektów SSDT)" },
   "plugins": [
     {
-      "name": "data-architect",
+      "name": "ssdt-atlas",
       "source": "./data-architect",
       "description": "Analiza projektów SSDT (SQL Server): DacFx + ScriptDom, mapa architektury, zmiany „było → jest” od ostatniej analizy."
     }

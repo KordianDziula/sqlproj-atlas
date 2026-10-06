@@ -8,7 +8,7 @@ Odczyt: GET /api/state, /api/version, /api/model, /api/object, /api/issues, /api
 Zapis:  POST /api/object, /api/domain, /api/domain/create, /api/note, /api/issue, /api/guidelines.
 
 UI tylko pokazuje dane i zapisuje poprawki użytkownika. Nie uruchamia żadnych operacji (analizy, odświeżenia):
-robi to wyłącznie Claude przez narzędzia MCP (/data-architect:init, /data-architect:refresh).
+robi to wyłącznie Claude przez narzędzia MCP (/ssdt-atlas:init, /ssdt-atlas:refresh).
 """
 
 import logging
@@ -88,7 +88,7 @@ class Guidelines(BaseModel):
 
 
 def create_app(ws: Workspace) -> FastAPI:
-    app = FastAPI(title="Data Architect", docs_url=None, redoc_url=None, openapi_url=None)
+    app = FastAPI(title="SSDT Atlas", docs_url=None, redoc_url=None, openapi_url=None)
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=["127.0.0.1", "localhost"])
 
     @app.middleware("http")

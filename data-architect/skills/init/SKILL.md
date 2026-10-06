@@ -1,14 +1,14 @@
 ---
 name: init
-description: Pierwsze uruchomienie Data Architect w projekcie bazodanowym SSDT (SQL Server, pliki .sqlproj). Zbiera wskazówki od użytkownika, analizuje wszystkie bazy silnikiem Microsoft DacFx, agreguje architekturę w domeny biznesowe z opisami i otwiera mapę w przeglądarce. Użyj, gdy użytkownik chce zainicjalizować, przeanalizować lub zmapować projekt SSDT po raz pierwszy.
+description: Pierwsze uruchomienie SSDT Atlas w projekcie bazodanowym SSDT (SQL Server, pliki .sqlproj). Zbiera wskazówki od użytkownika, analizuje wszystkie bazy silnikiem Microsoft DacFx, agreguje architekturę w domeny biznesowe z opisami i otwiera mapę w przeglądarce. Użyj, gdy użytkownik chce zainicjalizować, przeanalizować lub zmapować projekt SSDT po raz pierwszy.
 argument-hint: "[dodatkowe wskazówki]"
 ---
 
-# Data Architect: pierwsza analiza projektu
+# SSDT Atlas: pierwsza analiza projektu
 
 Jesteś odpowiedzialny za **agregację architektury**: silnik Microsoftu (DacFx + ScriptDom) dostarcza fakty (obiekty, kolumny, relacje, nierozwiązane odwołania), a Ty tworzysz z nich czytelną mapę: domeny biznesowe, opisy, wyjaśnienia. Użytkownik może później wszystko poprawić w UI, a jego poprawki mają pierwszeństwo.
 
-Narzędzia MCP serwera `atlas` (pełne nazwy zaczynają się od `mcp__plugin_data-architect_atlas__`): `atlas_status`, `atlas_analyze`, `atlas_configure`, `atlas_guidelines`, `atlas_list_objects`, `atlas_get_object`, `atlas_save_domains`, `atlas_assign`, `atlas_describe`, `atlas_issues`, `atlas_propose`, `atlas_open_ui`.
+Narzędzia MCP serwera `atlas` (pełne nazwy zaczynają się od `mcp__plugin_ssdt-atlas_atlas__`): `atlas_status`, `atlas_analyze`, `atlas_configure`, `atlas_guidelines`, `atlas_list_objects`, `atlas_get_object`, `atlas_save_domains`, `atlas_assign`, `atlas_describe`, `atlas_issues`, `atlas_propose`, `atlas_open_ui`.
 
 Dodatkowe wskazówki od użytkownika (mogą być puste): $ARGUMENTS
 
@@ -17,9 +17,9 @@ Komunikuj się po polsku. Pracuj partiami i informuj krótko o postępie („Ana
 ## Krok 1: Stan
 
 Wywołaj `atlas_status`.
-- Narzędzia `atlas` są niedostępne (serwer się nie uruchomił, zwykle brak uv albo nieprzygotowane środowisko) albo `engine.ok = false` (zwykle brak .NET SDK 8+ albo silnik nie jest jeszcze zbudowany na tym komputerze) → wykonaj kroki skilla `/data-architect:setup` (sprawdzenie, zgoda użytkownika, instalacja). Kontynuuj inicjalizację dopiero, gdy silnik działa.
+- Narzędzia `atlas` są niedostępne (serwer się nie uruchomił, zwykle brak uv albo nieprzygotowane środowisko) albo `engine.ok = false` (zwykle brak .NET SDK 8+ albo silnik nie jest jeszcze zbudowany na tym komputerze) → wykonaj kroki skilla `/ssdt-atlas:setup` (sprawdzenie, zgoda użytkownika, instalacja). Kontynuuj inicjalizację dopiero, gdy silnik działa.
 - `sqlProjectsFound` puste → to nie jest projekt SSDT (brak plików .sqlproj). Powiedz to i zakończ.
-- `initialized = true` i `guidelines = true` → projekt był już analizowany. Zaproponuj `/data-architect:refresh` (zmiany od ostatniej analizy). Kontynuuj pełną inicjalizację tylko, jeśli użytkownik wyraźnie tego chce.
+- `initialized = true` i `guidelines = true` → projekt był już analizowany. Zaproponuj `/ssdt-atlas:refresh` (zmiany od ostatniej analizy). Kontynuuj pełną inicjalizację tylko, jeśli użytkownik wyraźnie tego chce.
 
 ## Krok 2: Analiza silnikiem
 
@@ -69,4 +69,4 @@ Wywołaj `atlas_open_ui` (`view: map`) i podaj adres. Na koniec krótko w czacie
 - ile baz, domen i obiektów,
 - jakie domeny powstały (po kilka na bazę),
 - ile pozycji czeka na wyjaśnienie i gdzie je znaleźć (zakładka „Do wyjaśnienia”),
-- co dalej: `/data-architect:refresh` po nowych commitach.
+- co dalej: `/ssdt-atlas:refresh` po nowych commitach.

@@ -38,14 +38,14 @@ from data_architect.project_analysis.pipeline import analyze
 from data_architect.project_analysis.summary import analysis_summary
 from data_architect.web_app.runner import open_ui
 
-INSTRUCTIONS = """Data Architect analizuje projekty bazodanowe SSDT (SQL Server) w bieżącym katalogu.
+INSTRUCTIONS = """SSDT Atlas analizuje projekty bazodanowe SSDT (SQL Server) w bieżącym katalogu.
 Silnik Microsoft DacFx + ScriptDom dostarcza fakty (obiekty, kolumny, relacje, nierozwiązane odwołania).
 Ty agregujesz architekturę: domeny biznesowe, opisy, wyjaśnienia; użytkownik może wszystko poprawić w UI i jego poprawki
 mają pierwszeństwo.
-Zacznij od atlas_status. Przepływy: /data-architect:setup (zależności), /data-architect:init (pierwsze uruchomienie),
-/data-architect:refresh (zmiany od ostatniej analizy), /data-architect:open (UI)."""
+Zacznij od atlas_status. Przepływy: /ssdt-atlas:setup (zależności), /ssdt-atlas:init (pierwsze uruchomienie),
+/ssdt-atlas:refresh (zmiany od ostatniej analizy), /ssdt-atlas:open (UI)."""
 
-mcp = MCPServer(name="data-architect", version=__version__, instructions=INSTRUCTIONS, log_level="WARNING")
+mcp = MCPServer(name="ssdt-atlas", version=__version__, instructions=INSTRUCTIONS, log_level="WARNING")
 
 # projekt, na którym działają narzędzia; ustawiany raz przy starcie procesu
 _workspace: Workspace | None = None
@@ -72,7 +72,7 @@ def tool(fn: Callable) -> Callable:
     return mcp.tool(structured_output=False)(wrapper)
 
 
-NO_PREVIOUS_ANALYSIS = "Brak poprzedniej analizy. Uruchom najpierw /data-architect:init."
+NO_PREVIOUS_ANALYSIS = "Brak poprzedniej analizy. Uruchom najpierw /ssdt-atlas:init."
 NO_CHANGES = "Brak zapisanych zmian. Uruchom atlas_refresh."
 NO_CHANGESET = "Brak zestawu zmian"
 
@@ -99,7 +99,7 @@ def ws() -> Workspace:
 
 @tool
 def atlas_status() -> dict:
-    """Stan Data Architect w bieżącym projekcie: czy wykonano analizę, ile nowych commitów od ostatniej analizy,
+    """Stan SSDT Atlas w bieżącym projekcie: czy wykonano analizę, ile nowych commitów od ostatniej analizy,
     czy są wskazówki, stan silnika, otwarte pozycje do wyjaśnienia, adres UI. Wywołaj jako pierwsze."""
     return project_status(ws())
 
@@ -325,7 +325,7 @@ def atlas_open_ui(
     view: Annotated[Literal["map", "changes", "issues", "guides"] | None, Field(description="Widok")] = None,
     object: Annotated[str | None, Field(description="Id obiektu do pokazania")] = None,  # noqa: A002
 ) -> dict:
-    """Uruchamia lokalną aplikację Data Architect i otwiera ją w przeglądarce. Zwraca adres."""
+    """Uruchamia lokalną aplikację SSDT Atlas i otwiera ją w przeglądarce. Zwraca adres."""
     return {
         "url": open_ui(ws(), view, object),
         "note": "Aplikacja działa lokalnie (127.0.0.1) tak długo, jak sesja Claude Code.",

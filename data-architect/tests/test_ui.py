@@ -240,7 +240,7 @@ def test_changes_from_claude_appear_without_reload(page):
 def test_empty_project_explains_how_to_start(browser, workspace):
     page = open_page(browser, workspace)
     try:
-        expect(page.locator(".empty-state")).to_contain_text("/data-architect:init")
+        expect(page.locator(".empty-state")).to_contain_text("/ssdt-atlas:init")
         expect(page.locator("[data-analyze]")).to_have_count(0)
         assert page.errors == []
     finally:

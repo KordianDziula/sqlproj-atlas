@@ -9,6 +9,7 @@ public sealed class ScriptObject
     public string File = "";
     public string Text = "";          // tekst definicji obiektu
     public int StartLine;              // linia początku definicji w pliku
+    /// <summary>Cele zapisu jako klucze <see cref="Names.WriteKey"/>: baza (pusta = lokalna) i schemat.nazwa.</summary>
     public readonly HashSet<string> Writes = new(StringComparer.OrdinalIgnoreCase);
     public readonly List<(int Line, string Text)> Dynamic = new();
     public readonly List<(int Line, string Server, string Query)> OpenQueries = new();
@@ -103,8 +104,8 @@ public static class ScriptAnalyzer
         void AddWrite(SchemaObjectName n)
         {
             if (n.BaseIdentifier.Value.StartsWith('#') || n.BaseIdentifier.Value.StartsWith('@')) return;
-            _so.Writes.Add(n.BaseIdentifier.Value);
-            _so.Writes.Add(Names.Key(n.SchemaIdentifier?.Value, n.BaseIdentifier.Value));
+            // pełny cel: baza (np. [$(Src)]), schemat (pominięty = domyślny dbo, jak w DacFx) i nazwa
+            _so.Writes.Add(Names.WriteKey(n.DatabaseIdentifier?.Value, Names.Key(n.SchemaIdentifier?.Value, n.BaseIdentifier.Value)));
         }
 
         static IEnumerable<TableReference> Flatten(IEnumerable<TableReference> refs)
@@ -171,4 +172,7 @@ public static class Names
         var sc = Clean(schema);
         return ((sc.Length == 0 ? "dbo" : sc) + "." + Clean(name)).ToLowerInvariant();
     }
+
+    /// <summary>Klucz celu zapisu: baza (pusta dla lokalnej) i klucz obiektu, np. „$(src)|sales.order”.</summary>
+    public static string WriteKey(string? database, string key) => Clean(database).ToLowerInvariant() + "|" + key;
 }

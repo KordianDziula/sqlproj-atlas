@@ -2,8 +2,8 @@
 
     bin/atlas            serwer MCP po stdio (domyślnie; tak uruchamia go Claude Code przez .mcp.json)
     bin/atlas check      hak SessionStart: podpowiedź dla Claude'a, gdy brakuje zależności (hooks/hooks.json)
-    bin/atlas doctor     diagnostyka: Python, .NET, silnik (używa jej skill /data-architect:setup)
-    bin/atlas build-engine  kompilacja silnika z kodu wtyczki (wymaga .NET SDK 8+; woła ją /data-architect:setup)
+    bin/atlas doctor     diagnostyka: Python, .NET, silnik (używa jej skill /ssdt-atlas:setup)
+    bin/atlas build-engine  kompilacja silnika z kodu wtyczki (wymaga .NET SDK 8+; woła ją /ssdt-atlas:setup)
     bin/atlas ui         sama aplikacja webowa, bez Claude Code (do Ctrl+C)
     bin/atlas install    (obsługuje sam launcher) przygotowanie środowiska Pythona przez uv
 
@@ -23,7 +23,7 @@ import typer
 
 from data_architect.core.settings import SKIP_DIRS, resolve_project_dir
 
-app = typer.Typer(add_completion=False, help="Data Architect: analiza projektów SSDT dla Claude Code.")
+app = typer.Typer(add_completion=False, help="SSDT Atlas: analiza projektów SSDT dla Claude Code.")
 
 ProjectOption = Annotated[Path | None, typer.Option("--project", help="Katalog projektu SSDT")]
 
@@ -49,7 +49,7 @@ def mcp(ctx: typer.Context) -> None:
 def check(ctx: typer.Context) -> None:
     """Hak SessionStart: w projekcie SSDT sprawdza silnik.
 
-    Milczy, gdy wszystko działa; inaczej podpowiada Claude'owi /data-architect:setup.
+    Milczy, gdy wszystko działa; inaczej podpowiada Claude'owi /ssdt-atlas:setup.
     """
     from data_architect.project_analysis.engine import engine_status
 
@@ -59,8 +59,8 @@ def check(ctx: typer.Context) -> None:
     engine = engine_status()
     if not engine["ok"]:
         print(
-            "Data Architect: brakuje zależności silnika analizy SSDT. " + engine["error"] + "\n"
-            "Jeśli użytkownik chce korzystać z Data Architect, zaproponuj /data-architect:setup "
+            "SSDT Atlas: brakuje zależności silnika analizy SSDT. " + engine["error"] + "\n"
+            "Jeśli użytkownik chce korzystać z SSDT Atlas, zaproponuj /ssdt-atlas:setup "
             "(sprawdzi i po zgodzie użytkownika doinstaluje brakujące składniki)."
         )
 
@@ -94,7 +94,7 @@ def build_engine() -> None:
     try:
         dll = build()
     except AtlasError as e:
-        print(f"Data Architect: {e}")
+        print(f"SSDT Atlas: {e}")
         raise typer.Exit(1) from e
     print(f"Silnik gotowy: {dll}")
 

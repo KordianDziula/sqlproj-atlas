@@ -1,6 +1,6 @@
 [project]
 name = "data-architect"
-version = "1.4.0"
+version = "1.4.1"
 description = "Wtyczka Claude Code: analiza projektów SSDT (SQL Server) silnikiem Microsoft DacFx, mapa architektury w lokalnej aplikacji webowej."
 requires-python = ">=3.11"
 authors = [{ name = "Kordian Dziuła", email = "kordian.dziula@wp.pl" }]

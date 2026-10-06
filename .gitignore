@@ -7,7 +7,7 @@
 .coverage*
 htmlcov/
 
-# silnik C#: w repozytorium tylko kod; kompiluje go /data-architect:setup na komputerze użytkownika
+# silnik C#: w repozytorium tylko kod; kompiluje go /ssdt-atlas:setup na komputerze użytkownika
 data-architect/engine/bin/
 data-architect/engine/obj/
 data-architect/engine/dist/

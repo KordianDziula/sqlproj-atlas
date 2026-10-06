@@ -10,7 +10,7 @@ from data_architect.core.database import current_snapshot
 from data_architect.core.errors import AtlasError
 from data_architect.core.models import DbObject, Snapshot
 
-NO_ANALYSIS = "Brak analizy. Najpierw uruchom atlas_analyze (lub skill /data-architect:init)."
+NO_ANALYSIS = "Brak analizy. Najpierw uruchom atlas_analyze (lub skill /ssdt-atlas:init)."
 
 
 def require_analysis(s: Session) -> Snapshot:

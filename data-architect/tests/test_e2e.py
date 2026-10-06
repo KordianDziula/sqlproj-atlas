@@ -111,7 +111,7 @@ def test_object_detail(env):
 
 
 # ---------------------------------------------------------------------------
-# Agregacja architektury (to, co robi Claude w /data-architect:init)
+# Agregacja architektury (to, co robi Claude w /ssdt-atlas:init)
 # ---------------------------------------------------------------------------
 
 
@@ -190,7 +190,7 @@ def test_web_app_and_security(env):
     url = env.mcp.call("atlas_open_ui", {"view": "map"})["url"]
     env.ui = httpx.Client(base_url=re.sub("#.*$", "", url), timeout=600)
 
-    assert "Data Architect" in env.ui.get("").text
+    assert "SSDT Atlas" in env.ui.get("").text
     assert env.ui.get("app.js").status_code == 200
     assert env.ui.get("../../etc/passwd").status_code == 404
 

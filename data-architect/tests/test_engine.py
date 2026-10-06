@@ -250,14 +250,14 @@ def test_status_without_built_engine(monkeypatch, tmp_path):
     monkeypatch.setattr(engine, "engine_dll", lambda: tmp_path / "brak.dll")
     status = engine.engine_status()
     assert status["ok"] is False
-    assert "nie jest jeszcze zbudowany" in status["error"] and "/data-architect:setup" in status["error"]
+    assert "nie jest jeszcze zbudowany" in status["error"] and "/ssdt-atlas:setup" in status["error"]
 
 
 def test_status_without_dotnet_lists_checked_places(monkeypatch, tmp_path):
     monkeypatch.setattr(engine, "find_dotnet", lambda: None)
     monkeypatch.setattr(engine, "dotnet_candidates", lambda: [tmp_path / "a", tmp_path / "b"])
     error = engine.engine_status()["error"]
-    assert "Nie znaleziono .NET" in error and "/data-architect:setup" in error
+    assert "Nie znaleziono .NET" in error and "/ssdt-atlas:setup" in error
     assert str(tmp_path / "a") in error and str(tmp_path / "b") in error
 
 

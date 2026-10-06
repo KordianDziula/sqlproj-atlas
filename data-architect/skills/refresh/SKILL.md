@@ -1,17 +1,17 @@
 ---
 name: refresh
-description: Odświeża analizę Data Architect. Porównuje bieżący stan projektu SSDT z poprzednią analizą („było → jest”), opisuje zmiany i ich wpływ (np. usunięta kolumna nadal używana w procedurach), przypisuje nowe obiekty do domen i otwiera widok Zmiany. Użyj, gdy użytkownik pyta, co się zmieniło w bazach, albo chce zaktualizować mapę.
+description: Odświeża analizę SSDT Atlas. Porównuje bieżący stan projektu SSDT z poprzednią analizą („było → jest”), opisuje zmiany i ich wpływ (np. usunięta kolumna nadal używana w procedurach), przypisuje nowe obiekty do domen i otwiera widok Zmiany. Użyj, gdy użytkownik pyta, co się zmieniło w bazach, albo chce zaktualizować mapę.
 ---
 
-# Data Architect: odświeżenie i opis zmian
+# SSDT Atlas: odświeżenie i opis zmian
 
-Komunikuj się po polsku. Narzędzia MCP serwera `atlas` (pełne nazwy zaczynają się od `mcp__plugin_data-architect_atlas__`).
+Komunikuj się po polsku. Narzędzia MCP serwera `atlas` (pełne nazwy zaczynają się od `mcp__plugin_ssdt-atlas_atlas__`).
 
 ## Krok 1: Stan
 
 `atlas_status`.
-- `initialized = false` → poproś o `/data-architect:init` i zakończ.
-- `engine.ok = false` → przekaż komunikat błędu, zaproponuj `/data-architect:setup` (np. po aktualizacji wtyczki silnik trzeba zbudować ponownie) i zakończ.
+- `initialized = false` → poproś o `/ssdt-atlas:init` i zakończ.
+- `engine.ok = false` → przekaż komunikat błędu, zaproponuj `/ssdt-atlas:setup` (np. po aktualizacji wtyczki silnik trzeba zbudować ponownie) i zakończ.
 
 ## Krok 2: Zmiany
 

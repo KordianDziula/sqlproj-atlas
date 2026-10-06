@@ -27,7 +27,7 @@ from data_architect.project_analysis.pipeline import analyze
 from make_test_project import make  # tests/fixtures jest na ścieżce (pythonpath w pyproject.toml)
 
 ENGINE_OK = engine_status()["ok"]
-requires_engine = pytest.mark.skipif(not ENGINE_OK, reason="brak silnika .NET (zob. /data-architect:setup)")
+requires_engine = pytest.mark.skipif(not ENGINE_OK, reason="brak silnika .NET (zob. /ssdt-atlas:setup)")
 
 
 # ---------------------------------------------------------------------------

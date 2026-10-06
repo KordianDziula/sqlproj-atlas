@@ -1,11 +1,11 @@
 #!/bin/sh
-# Data Architect: uruchamia wtyczkę przez uv (macOS / Linux; na Windows bin/atlas.cmd).
+# SSDT Atlas: uruchamia wtyczkę przez uv (macOS / Linux; na Windows bin/atlas.cmd).
 #
 # Wspólne środowisko (~/.data-architect/venv) zawiera tylko zewnętrzne biblioteki z uv.lock (uv dobiera też Pythona).
 # Kod wtyczki ładujemy wprost z jej katalogu (PYTHONPATH=<wtyczka>/src), więc kilka sesji i wersji wtyczki
 # może działać równocześnie bez przeinstalowywania pakietu.
 #
-#   bin/atlas install   przygotowuje środowisko (pobiera Pythona, jeśli trzeba, i biblioteki); woła je /data-architect:setup
+#   bin/atlas install   przygotowuje środowisko (pobiera Pythona, jeśli trzeba, i biblioteki); woła je /ssdt-atlas:setup
 #   bin/atlas [...]     uruchamia wtyczkę (bez argumentów: serwer MCP)
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -22,7 +22,7 @@ for candidate in "$HOME/.local/bin/uv" "$HOME/.cargo/bin/uv"; do
 done
 
 if [ -z "$UV" ]; then
-  echo "Data Architect: brak uv (menedżer Pythona dla wtyczki). Zaproponuj użytkownikowi /data-architect:setup."
+  echo "SSDT Atlas: brak uv (menedżer Pythona dla wtyczki). Zaproponuj użytkownikowi /ssdt-atlas:setup."
   [ "$1" = "check" ] && exit 0
   exit 1
 fi
@@ -41,7 +41,7 @@ if [ "$1" = "install" ]; then
 fi
 
 if [ ! -d "$UV_PROJECT_ENVIRONMENT" ]; then
-  echo "Data Architect: środowisko wtyczki nie jest przygotowane. Zaproponuj użytkownikowi /data-architect:setup."
+  echo "SSDT Atlas: środowisko wtyczki nie jest przygotowane. Zaproponuj użytkownikowi /ssdt-atlas:setup."
   [ "$1" = "check" ] && exit 0
   exit 1
 fi

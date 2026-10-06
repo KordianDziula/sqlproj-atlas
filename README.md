@@ -1,6 +1,6 @@
 # claude-ssdt-atlas
 
-Wtyczka Claude Code **Data Architect** do analizy projektów bazodanowych **SSDT (SQL Server)**.
+Wtyczka Claude Code **SSDT Atlas** do analizy projektów bazodanowych **SSDT (SQL Server)**.
 
 - Silnik Microsoft **DacFx + ScriptDom** wyciąga fakty: obiekty, kolumny, relacje, nierozwiązane odwołania.
 - Claude grupuje obiekty w domeny biznesowe i je opisuje.
@@ -11,12 +11,12 @@ Wtyczka Claude Code **Data Architect** do analizy projektów bazodanowych **SSDT
 
 - Claude Code i git
 - projekt SSDT (pliki `.sqlproj`, format klasyczny lub SDK-style), najlepiej w repozytorium git
-- **uv** i **.NET SDK 8+**: nie instaluj ręcznie, `/data-architect:setup` doinstaluje je za Twoją zgodą
+- **uv** i **.NET SDK 8+**: nie instaluj ręcznie, `/ssdt-atlas:setup` doinstaluje je za Twoją zgodą
   do katalogu domowego (bez uprawnień administratora)
 - Windows albo macOS (działa też na Linuksie)
 
 Repozytorium zawiera tylko kod źródłowy. Silnik analizy (C#) buduje się na Twoim komputerze przy
-`/data-architect:setup` do `~/.data-architect/engine/` (pakiety Microsoftu pobierane z NuGet, 1–3 minuty za pierwszym razem).
+`/ssdt-atlas:setup` do `~/.data-architect/engine/` (pakiety Microsoftu pobierane z NuGet, 1–3 minuty za pierwszym razem).
 
 ## Instalacja
 
@@ -25,29 +25,29 @@ claude plugin marketplace add https://gitlab.com/kordiandziula/claude-ssdt-atlas
 ```
 
 ```bash
-claude plugin install data-architect@data-architect-marketplace
+claude plugin install ssdt-atlas@claude-ssdt-atlas
 ```
 
-Potem uruchom Claude Code w katalogu projektu SSDT i wpisz `/data-architect:setup`.
+Potem uruchom Claude Code w katalogu projektu SSDT i wpisz `/ssdt-atlas:setup`.
 
 Aktualizacja:
 
 ```bash
-claude plugin marketplace update data-architect-marketplace
+claude plugin marketplace update claude-ssdt-atlas
 ```
 
 ```bash
-claude plugin update data-architect@data-architect-marketplace
+claude plugin update ssdt-atlas@claude-ssdt-atlas
 ```
 
 ## Użycie
 
 | Komenda | Co robi |
 |---|---|
-| `/data-architect:setup` | sprawdza i za zgodą doinstalowuje uv oraz .NET SDK, buduje silnik analizy |
-| `/data-architect:init` | pierwsza analiza: krótki wywiad, analiza silnikiem, domeny i opisy, otwarcie mapy |
-| `/data-architect:refresh` | ponowna analiza i porównanie z poprzednią: co się zmieniło, wpływ i ryzyko |
-| `/data-architect:open [widok]` | otwiera aplikację: `map`, `changes`, `issues`, `guides` |
+| `/ssdt-atlas:setup` | sprawdza i za zgodą doinstalowuje uv oraz .NET SDK, buduje silnik analizy |
+| `/ssdt-atlas:init` | pierwsza analiza: krótki wywiad, analiza silnikiem, domeny i opisy, otwarcie mapy |
+| `/ssdt-atlas:refresh` | ponowna analiza i porównanie z poprzednią: co się zmieniło, wpływ i ryzyko |
+| `/ssdt-atlas:open [widok]` | otwiera aplikację: `map`, `changes`, `issues`, `guides` |
 | pytania w czacie | np. „co korzysta z tabeli sales.Orders?”, „co się zepsuje, jeśli usunę kolumnę X?” |
 
 Dane wtyczki trafiają do `<projekt>/.claude/data-architect/` (katalog powstaje przy pierwszej analizie).
@@ -56,8 +56,8 @@ są wykluczone przez `.gitignore`.
 
 ## Problemy
 
-- **Brak narzędzi `atlas_*`:** uruchom `/data-architect:setup`, potem `/mcp` → atlas → Reconnect.
-- **„Silnik analizy nie jest jeszcze zbudowany”** (np. po aktualizacji wtyczki): `/data-architect:setup`.
+- **Brak narzędzi `atlas_*`:** uruchom `/ssdt-atlas:setup`, potem `/mcp` → atlas → Reconnect.
+- **„Silnik analizy nie jest jeszcze zbudowany”** (np. po aktualizacji wtyczki): `/ssdt-atlas:setup`.
 - **macOS, „Permission denied” dla `bin/atlas`:** `chmod +x <katalog-wtyczki>/bin/atlas`.
 - **Diagnostyka:** `<katalog-wtyczki>/bin/atlas doctor`.
 - **Log:** `.claude/data-architect/atlas.log` w katalogu projektu.

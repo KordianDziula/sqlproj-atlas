@@ -31,7 +31,7 @@ def test_check_suggests_setup_when_engine_missing(project_a):
         outside = runner.invoke(cli.app, ["--project", str(project_a / "src" / "Sales" / "crm"), "check"])
 
     assert "Nie znaleziono .NET" in result.output
-    assert "/data-architect:setup" in result.output
+    assert "/ssdt-atlas:setup" in result.output
     assert outside.output == "", "poza projektem SSDT hak milczy"
 
 
@@ -65,7 +65,7 @@ def test_launcher_starts_mcp_server(project_a):
         env=os.environ | {"ATLAS_PROJECT_DIR": str(project_a)},
     )
     response = json.loads(result.stdout.decode("utf-8").splitlines()[0])
-    assert response["result"]["serverInfo"]["name"] == "data-architect", result.stderr.decode("utf-8", "replace")
+    assert response["result"]["serverInfo"]["name"] == "ssdt-atlas", result.stderr.decode("utf-8", "replace")
 
 
 @pytest.mark.skipif(

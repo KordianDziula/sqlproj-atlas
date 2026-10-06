@@ -1,9 +1,9 @@
 ---
 name: setup
-description: Sprawdza zależności Data Architect (uv ze środowiskiem Pythona, .NET SDK 8+, silnik analizy zbudowany na tym komputerze) i za zgodą użytkownika doinstalowuje brakujące oraz buduje silnik. Użyj po instalacji lub aktualizacji wtyczki, gdy narzędzia atlas nie działają, gdy atlas_status zgłasza brak silnika albo gdy hak startowy sesji podpowiada /data-architect:setup.
+description: Sprawdza zależności SSDT Atlas (uv ze środowiskiem Pythona, .NET SDK 8+, silnik analizy zbudowany na tym komputerze) i za zgodą użytkownika doinstalowuje brakujące oraz buduje silnik. Użyj po instalacji lub aktualizacji wtyczki, gdy narzędzia atlas nie działają, gdy atlas_status zgłasza brak silnika albo gdy hak startowy sesji podpowiada /ssdt-atlas:setup.
 ---
 
-# Data Architect: sprawdzenie i instalacja zależności
+# SSDT Atlas: sprawdzenie i instalacja zależności
 
 Wtyczka potrzebuje:
 - **uv** (menedżer Pythona od Astral). Pobiera właściwego Pythona i pakiety wtyczki (MCP SDK, FastAPI, SQLAlchemy…) do izolowanego środowiska `~/.data-architect/venv`, więc nie miesza w systemowym Pythonie.
@@ -20,7 +20,7 @@ Uruchom narzędziem Bash (katalog wtyczki: `${CLAUDE_PLUGIN_ROOT}`):
 ```
 
 Interpretacja:
-- JSON z `"engine": {"ok": true}`: wszystko działa. Powiedz to i zaproponuj `/data-architect:init`.
+- JSON z `"engine": {"ok": true}`: wszystko działa. Powiedz to i zaproponuj `/ssdt-atlas:init`.
 - „brak uv”: brakuje uv (krok 3a).
 - „środowisko wtyczki nie jest przygotowane”: uv jest, trzeba przygotować środowisko (krok 3b).
 - JSON z `"engine": {"ok": false}`:
@@ -75,7 +75,7 @@ Jeśli polecenie się nie powiedzie, pokaż użytkownikowi błąd i polecenie do
 
 1. Ponownie uruchom `"${CLAUDE_PLUGIN_ROOT}/bin/atlas" doctor`. Ma zwrócić `"engine": {"ok": true}`.
 2. Jeśli serwer MCP `atlas` nie działał (narzędzia `atlas_*` były niedostępne), poproś o ponowne połączenie: `/mcp` → atlas → Reconnect albo restart Claude Code.
-3. Zaproponuj `/data-architect:init`.
+3. Zaproponuj `/ssdt-atlas:init`.
 
 Uwaga dla Windows: w aplikacji Claude desktop nie instaluj niczego ręcznie do `%LOCALAPPDATA%`. Aplikacja wirtualizuje AppData i inne programy (np. Claude Code w terminalu) nie zobaczą takiej instalacji. Katalogi `~/.local/bin`, `~/.dotnet` i `~/.data-architect` są bezpieczne.
 

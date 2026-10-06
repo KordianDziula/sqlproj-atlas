@@ -84,7 +84,7 @@ def setup_logging(log_file: Path | None = None) -> None:
 
     logging.basicConfig(
         level=logging.INFO,
-        format="[data-architect %(asctime)s] %(levelname)s %(name)s: %(message)s",
+        format="[ssdt-atlas %(asctime)s] %(levelname)s %(name)s: %(message)s",
         handlers=handlers,
         force=True,
     )
