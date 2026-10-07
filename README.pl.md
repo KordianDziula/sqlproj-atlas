@@ -61,6 +61,16 @@ wcześniejszych wersji, `.claude/ssdt-atlas` i `.claude/data-architect`, są prz
 `guidelines.md`, `overrides.json` i `config.json` warto trzymać w repozytorium projektu. Baza i pliki robocze
 są wykluczone przez `.gitignore`.
 
+## Prywatność
+
+- Bez telemetrii: wtyczka nie wysyła kodu, schematu ani innych danych na żaden serwer. Jedyny ruch sieciowy to
+  pobranie narzędzi przy `/sqlproj-atlas:setup`, za Twoją zgodą (uv, PyPI, .NET, NuGet).
+- Dane osobowe: z historii git wtyczka czyta **autora, datę i opis commitów** (commit każdej analizy i commity między
+  analizami). Zapisuje je w `atlas.db`, pokazuje w zakładce „Zmiany” i przekazuje Claude'owi jako kontekst do opisu
+  zmian. Adresów e-mail nie czyta ani nie zapisuje.
+- Usunięcie danych: skasuj katalog `.claude/sqlproj-atlas/` w projekcie (oraz `~/.sqlproj-atlas/` ze środowiskiem
+  i silnikiem wtyczki).
+
 ## Problemy
 
 - **Brak narzędzi `atlas_*`:** uruchom `/sqlproj-atlas:setup`, potem `/mcp` → atlas → Reconnect.

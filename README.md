@@ -91,8 +91,14 @@ Everything below happens on your computer and is visible in the source code of t
   correction or opening of the app, never just by starting a session:
   - `guidelines.md`, `overrides.json`, `config.json`: your guidelines, corrections and settings, worth committing,
   - `atlas.db` (SQLite), `atlas.log`, `ui.lock`, `work/`: local files, excluded by a generated `.gitignore`.
+- Personal data: from your git history the plugin reads the **author name, date and message of commits** (the
+  commit of each analysis and the commits between two analyses). They are stored in `atlas.db`, shown in the
+  Changes view and returned to Claude as context for describing changes. Email addresses are not read or stored.
+  Nothing else personal is collected; the SQL files are analyzed as code.
 - What Claude sees: the analysis results returned by the plugin's tools in your Claude Code session, under the same
   terms as the rest of the session.
+- Deleting the data: remove the `.claude/sqlproj-atlas/` folder from your project (and `~/.sqlproj-atlas/` for the
+  plugin's environment and engine).
 
 ## Platform support
 
