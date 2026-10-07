@@ -1,16 +1,16 @@
 # Python
-**/.venv/
-**/__pycache__/
-**/.pytest_cache/
-**/.ruff_cache/
-**/.hypothesis/
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+.hypothesis/
 .coverage*
 htmlcov/
 
-# silnik C#: w repozytorium tylko kod; kompiluje go /ssdt-atlas:setup na komputerze użytkownika
-ssdt-atlas/engine/bin/
-ssdt-atlas/engine/obj/
-ssdt-atlas/engine/dist/
+# silnik C#: w repozytorium tylko kod; kompiluje go /sqlproj-atlas:setup na komputerze użytkownika
+engine/bin/
+engine/obj/
+engine/dist/
 
 # lokalne ustawienia i dane Claude Code
 .claude/

@@ -1,9 +1,0 @@
-engine/bin/
-engine/obj/
-__pycache__/
-.venv/
-.pytest_cache/
-.ruff_cache/
-*.log
-.claude/
-engine/dist/
