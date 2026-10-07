@@ -1,6 +1,6 @@
 [project]
 name = "sqlproj-atlas"
-version = "1.7.0"
+version = "1.7.1"
 description = "Wtyczka Claude Code: analiza projektów SSDT (SQL Server) silnikiem Microsoft DacFx, mapa architektury w lokalnej aplikacji webowej."
 requires-python = ">=3.12"
 authors = [{ name = "Kordian Dziuła", email = "kordian.dziula@wp.pl" }]

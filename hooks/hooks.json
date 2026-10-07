@@ -4,7 +4,7 @@
       {
         "matcher": "startup",
         "hooks": [
-          { "type": "command", "command": "\"${CLAUDE_PLUGIN_ROOT}/scripts/atlas\" check", "timeout": 60 }
+          { "type": "command", "command": "\"${CLAUDE_PLUGIN_ROOT}\"/scripts/atlas check", "timeout": 60 }
         ]
       }
     ]

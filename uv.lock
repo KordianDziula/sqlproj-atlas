@@ -1195,7 +1195,7 @@ wheels = [
 
 [[package]]
 name = "sqlproj-atlas"
-version = "1.7.0"
+version = "1.7.1"
 source = { virtual = "." }
 dependencies = [
     { name = "fastapi" },

@@ -1,7 +1,7 @@
 {
   "name": "sqlproj-atlas",
   "displayName": "SqlProj Atlas",
-  "version": "1.7.0",
+  "version": "1.7.1",
   "description": "Maps and explains SQL Server Data Tools (SSDT) database projects: Microsoft DacFx + ScriptDom extract objects and relationships, Claude groups them into business domains, a local web app shows the map and before/after changes since the last analysis.",
   "author": {
     "name": "Kordian Dziuła",

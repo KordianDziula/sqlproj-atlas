@@ -4,4 +4,4 @@ Silnik Microsoftu (DacFx + ScriptDom) dostarcza fakty o bazach, Claude agreguje 
 (domeny, opisy), a użytkownik poprawia wszystko w lokalnej aplikacji webowej.
 """
 
-__version__ = "1.7.0"
+__version__ = "1.7.1"
