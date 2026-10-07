@@ -7,37 +7,32 @@
 #
 #   scripts/atlas install   przygotowuje środowisko (pobiera Pythona, jeśli trzeba, i biblioteki); woła je /sqlproj-atlas:setup
 #   scripts/atlas [...]     uruchamia wtyczkę (bez argumentów: serwer MCP)
+#
+# uv wywołujemy zawsze po nazwie, z pełną komendą (walidator katalogu Anthropic musi widzieć, co jest uruchamiane).
+# Opcje: --frozen (wersje z uv.lock), --no-dev (bez narzędzi deweloperskich), --inexact (bez usuwania pakietów,
+# których nie zna ta wersja wtyczki, bo mogą ich używać inne sesje).
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 export ATLAS_PLUGIN_ROOT="$ROOT"
 export PYTHONPATH="$ROOT/src${PYTHONPATH:+:$PYTHONPATH}"
 export UV_PROJECT_ENVIRONMENT="${ATLAS_VENV:-$HOME/.sqlproj-atlas/venv}"
 
-# --- uv: z PATH albo z typowych miejsc instalacji (PATH sesji mógł nie zostać odświeżony po instalacji) ---
-UV="${ATLAS_UV:-$(command -v uv)}"
-for candidate in "$HOME/.local/bin/uv" "$HOME/.cargo/bin/uv"; do
-  if [ -z "$UV" ] && [ -x "$candidate" ]; then
-    UV="$candidate"
-  fi
-done
+# --- uv: ATLAS_UV, potem PATH, potem typowe miejsca instalacji (PATH sesji mógł nie zostać odświeżony po instalacji) ---
+PATH="$PATH:$HOME/.local/bin:$HOME/.cargo/bin"
+if [ -n "${ATLAS_UV:-}" ]; then
+  PATH="${ATLAS_UV%/*}:$PATH"
+fi
+export PATH
 
-if [ -z "$UV" ]; then
+if ! command -v uv >/dev/null 2>&1; then
   echo "SqlProj Atlas: brak uv (menedżer Pythona dla wtyczki). Zaproponuj użytkownikowi /sqlproj-atlas:setup."
   [ "$1" = "check" ] && exit 0
   exit 1
 fi
 
-# uv z opcjami wspólnymi: zablokowane wersje z uv.lock, bez narzędzi deweloperskich, bez usuwania pakietów,
-# których nie zna ta wersja wtyczki (mogą ich używać inne sesje)
-uv_project() {
-  command="$1"
-  shift
-  exec "$UV" "$command" --project "$ROOT" --frozen --no-dev --inexact "$@"
-}
-
 # --- przygotowanie środowiska ---
 if [ "$1" = "install" ]; then
-  uv_project sync
+  exec uv sync --project "$ROOT" --frozen --no-dev --inexact
 fi
 
 if [ ! -d "$UV_PROJECT_ENVIRONMENT" ]; then
@@ -46,4 +41,4 @@ if [ ! -d "$UV_PROJECT_ENVIRONMENT" ]; then
   exit 1
 fi
 
-uv_project run --quiet python -m sqlproj_atlas "$@"
+exec uv run --project "$ROOT" --frozen --no-dev --inexact --quiet python -m sqlproj_atlas "$@"
